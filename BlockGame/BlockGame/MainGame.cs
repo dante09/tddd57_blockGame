@@ -1,16 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Kinect;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
 
 namespace BlockGame
 {
+
     /// <summary>
     /// This is the main type for your game
     /// </summary>
@@ -18,11 +15,17 @@ namespace BlockGame
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        private BlockGame blockGame;
+        private KinectChooser chooser;
 
         public MainGame()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+
+            this.chooser = new KinectChooser(this, ColorImageFormat.RgbResolution640x480Fps30, DepthImageFormat.Resolution640x480Fps30);
+            blockGame = new BlockGame(this);
+            this.Services.AddService(typeof(KinectChooser), this.chooser);
         }
 
         /// <summary>
@@ -34,7 +37,7 @@ namespace BlockGame
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-
+            this.Components.Add(blockGame);
             base.Initialize();
         }
 
@@ -66,10 +69,6 @@ namespace BlockGame
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            // Allows the game to exit
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
-                this.Exit();
-
             // TODO: Add your update logic here
 
             base.Update(gameTime);

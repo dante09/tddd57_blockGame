@@ -6,11 +6,11 @@ using Microsoft.Xna.Framework;
 
 namespace BlockGame
 {
-    class BlockGame : GameComponent
+    class BlockCreationHumanPlayer : BlockCreationPlayer
     {
-
-        public BlockGame(Game game) : base(game)
-        {}
+        public BlockCreationHumanPlayer(Game game)
+            : base(game)
+        { }
 
         public override void Update(GameTime gameTime)
         {
