@@ -24,8 +24,10 @@ namespace BlockGame
             Content.RootDirectory = "Content";
 
             this.chooser = new KinectChooser(this, ColorImageFormat.RgbResolution640x480Fps30, DepthImageFormat.Resolution640x480Fps30);
-            blockGame = new BlockGame(this);
+            this.Components.Add(this.chooser);
             this.Services.AddService(typeof(KinectChooser), this.chooser);
+
+            blockGame = new BlockGame(this);
         }
 
         /// <summary>
@@ -41,16 +43,12 @@ namespace BlockGame
             base.Initialize();
         }
 
-        /// <summary>
-        /// LoadContent will be called once per game and is the place to load
-        /// all of your content.
-        /// </summary>
         protected override void LoadContent()
         {
-            // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
+            this.spriteBatch = new SpriteBatch(GraphicsDevice);
+            this.Services.AddService(typeof(SpriteBatch), spriteBatch);
 
-            // TODO: use this.Content to load your game content here
+            base.LoadContent();
         }
 
         /// <summary>
@@ -82,7 +80,6 @@ namespace BlockGame
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // TODO: Add your drawing code here
 
             base.Draw(gameTime);
         }

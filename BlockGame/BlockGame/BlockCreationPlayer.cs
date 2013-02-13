@@ -8,8 +8,13 @@ namespace BlockGame
 {
     abstract class BlockCreationPlayer : Player
     {
+        protected BlockCreationRenderer bcRenderer;
+
         public BlockCreationPlayer(Game game)
             : base(game)
-        { }
+        {
+            bcRenderer = new BlockCreationRenderer(game);
+            game.Components.Add(bcRenderer);
+        }
     }
 }

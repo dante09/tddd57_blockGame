@@ -151,8 +151,6 @@
         {
             base.LoadContent();
 
-            this.chooserBackground = Game.Content.Load<Texture2D>("ChooserBackground");
-            this.font = Game.Content.Load<SpriteFont>("Segoe16");
         }
 
         /// <summary>
