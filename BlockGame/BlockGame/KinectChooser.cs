@@ -26,11 +26,6 @@
         /// The requested depth image format.
         /// </summary>
         private readonly DepthImageFormat depthImageFormat;
-
-        /// <summary>
-        /// The chooser background texture.
-        /// </summary>
-        private Texture2D chooserBackground;
         
         /// <summary>
         /// The SpriteBatch used for rendering.
@@ -60,7 +55,7 @@
             this.statusMap.Add(KinectStatus.Connected, string.Empty);
             this.statusMap.Add(KinectStatus.DeviceNotGenuine, "Device Not Genuine");
             this.statusMap.Add(KinectStatus.DeviceNotSupported, "Device Not Supported");
-            this.statusMap.Add(KinectStatus.Disconnected, "Required");
+            this.statusMap.Add(KinectStatus.Disconnected, "Disconnected");
             this.statusMap.Add(KinectStatus.Error, "Error");
             this.statusMap.Add(KinectStatus.Initializing, "Initializing...");
             this.statusMap.Add(KinectStatus.InsufficientBandwidth, "Insufficient Bandwidth");
@@ -100,12 +95,6 @@
                 this.Initialize();
             }
 
-            // If the background is not loaded, load it now
-            if (this.chooserBackground == null)
-            {
-                this.LoadContent();
-            }
-
             // If we don't have a sensor, or the sensor we have is not connected
             // then we will display the information text
             if (this.Sensor == null || this.LastStatus != KinectStatus.Connected)
@@ -113,19 +102,9 @@
                 this.spriteBatch.Begin();
 
                 // Render the background
-                this.spriteBatch.Draw(
-                    this.chooserBackground,
-                    new Vector2(Game.GraphicsDevice.Viewport.Width / 2, Game.GraphicsDevice.Viewport.Height / 2),
-                    null,
-                    Color.White,
-                    0,
-                    new Vector2(this.chooserBackground.Width / 2, this.chooserBackground.Height / 2),
-                    1,
-                    SpriteEffects.None,
-                    0);
 
                 // Determine the text
-                string txt = "Required";
+                string txt = "Kinect not found.";
                 if (this.Sensor != null)
                 {
                     txt = this.statusMap[this.LastStatus];
@@ -150,7 +129,7 @@
         protected override void LoadContent()
         {
             base.LoadContent();
-
+            this.font = Game.Content.Load<SpriteFont>("Segoe16");
         }
 
         /// <summary>

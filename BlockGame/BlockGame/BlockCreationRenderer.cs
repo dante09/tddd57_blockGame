@@ -39,12 +39,9 @@ namespace BlockGame
         private Vector2 position;
         private Vector2 size;
 
-        private KinectChooser chooser;
-
         public BlockCreationRenderer(Game game) : base(game)
         {
-            chooser = (KinectChooser)Game.Services.GetService(typeof(KinectChooser));
-            size = new Vector2(200, 200);
+            size = new Vector2(200, 600);
             position = new Vector2(0, 0);
         }
 
@@ -56,11 +53,11 @@ namespace BlockGame
 
         public override void Update(GameTime gameTime)
         {
-            if (chooser == null)
-                return;
-            if (null == this.chooser.Sensor ||
-                false == this.chooser.Sensor.IsRunning ||
-                KinectStatus.Connected != this.chooser.Sensor.Status)
+            KinectChooser chooser = (KinectChooser)this.Game.Services.GetService(typeof(KinectChooser));
+
+            if (null == chooser.Sensor ||
+                false == chooser.Sensor.IsRunning ||
+                KinectStatus.Connected != chooser.Sensor.Status)
             {
                 return;
             }
@@ -100,8 +97,6 @@ namespace BlockGame
 
             base.Update(gameTime);
 
-            // OLOGISKT MEN SKYDDAR MOT EPILEPSI
-            this.Draw(gameTime);
         }
 
         public override void Draw(GameTime gameTime)

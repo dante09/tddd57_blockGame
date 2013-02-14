@@ -8,13 +8,13 @@ namespace BlockGame
 {
     class BlockGame : GameComponent
     {
-        private BlockCreationPlayer bcPlayer;
+        private BlockCreationPlayer blockCreator;
+        //private BlockPlacerPlayer blockPlacer;
+
 
         public BlockGame(Game game) : base(game)
         {
-            bcPlayer = new BlockCreationHumanPlayer(game);
-            game.Components.Add(bcPlayer);
-
+            blockCreator = new BlockCreationHumanPlayer();
         }
 
         public override void Initialize()

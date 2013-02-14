@@ -6,10 +6,7 @@ using Microsoft.Xna.Framework;
 
 namespace BlockGame
 {
-    abstract class Player : GameComponent
+    abstract class Player
     {
-        public Player(Game game)
-            : base(game)
-        { }
     }
 }

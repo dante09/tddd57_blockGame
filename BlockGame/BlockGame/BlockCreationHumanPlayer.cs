@@ -8,15 +8,5 @@ namespace BlockGame
 {
     class BlockCreationHumanPlayer : BlockCreationPlayer
     {
-        public BlockCreationHumanPlayer(Game game)
-            : base(game)
-        {
-            
-        }
-
-        public override void Update(GameTime gameTime)
-        {
-            base.Update(gameTime);
-        }
     }
 }

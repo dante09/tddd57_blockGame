@@ -18,6 +18,9 @@ namespace BlockGame
         private BlockGame blockGame;
         private KinectChooser chooser;
 
+
+        private BlockCreationRenderer leftScreen;
+
         public MainGame()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -27,6 +30,7 @@ namespace BlockGame
             this.Components.Add(this.chooser);
             this.Services.AddService(typeof(KinectChooser), this.chooser);
 
+            leftScreen = new BlockCreationRenderer(this);
             blockGame = new BlockGame(this);
         }
 
@@ -40,6 +44,7 @@ namespace BlockGame
         {
             // TODO: Add your initialization logic here
             this.Components.Add(blockGame);
+            this.Components.Add(leftScreen);
             base.Initialize();
         }
 
@@ -79,7 +84,6 @@ namespace BlockGame
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
-
 
             base.Draw(gameTime);
         }
