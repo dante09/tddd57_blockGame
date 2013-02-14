@@ -6,7 +6,13 @@ using Microsoft.Xna.Framework;
 
 namespace BlockGame
 {
-    abstract class Player
+    public abstract class Player
     {
+        public Boolean isHuman
+        {
+            get;
+            private set;
+        }
+
     }
 }

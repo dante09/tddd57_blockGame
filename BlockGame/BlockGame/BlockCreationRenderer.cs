@@ -41,8 +41,15 @@ namespace BlockGame
 
         public BlockCreationRenderer(Game game) : base(game)
         {
-            size = new Vector2(200, 600);
+            
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+            size = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height);
             position = new Vector2(0, 0);
+
         }
 
         protected override void LoadContent()

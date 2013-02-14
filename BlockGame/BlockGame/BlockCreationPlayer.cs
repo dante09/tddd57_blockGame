@@ -9,9 +9,5 @@ namespace BlockGame
     abstract class BlockCreationPlayer : Player
     {
 
-        public BlockCreationPlayer()
-        {
-
-        }
     }
 }
