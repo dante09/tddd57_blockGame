@@ -1,8 +1,3 @@
-//------------------------------------------------------------------------------
-// <copyright file="SkeletonStreamRenderer.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-//------------------------------------------------------------------------------
 
 namespace BlockGame
 {
@@ -21,59 +16,24 @@ namespace BlockGame
     /// <summary>
     /// This class is responsible for rendering a skeleton stream.
     /// </summary>
-    public class SkeletonStreamRenderer : GameComponent
+    public class SkeletonStreamManager : GameComponent
     {
-        /// <summary>
-        /// This is the map method called when mapping from
-        /// skeleton space to the target space.
-        /// </summary>
-        private readonly SkeletonPointMap mapMethod;
+        private int lastSkeletonUpdate = 0;
 
-        /// <summary>
-        /// The last frames skeleton data.
-        /// </summary>
-        private static Skeleton[] skeletonData;
-
-        /// <summary>
-        /// This flag ensures only request a frame once per update call
-        /// across the entire application.
-        /// </summary>
-        private static bool skeletonDrawn = true;
-
-        /// <summary>
-        /// The origin (center) location of the joint texture.
-        /// </summary>
-        private Vector2 jointOrigin;
-
-        /// <summary>
-        /// The joint texture.
-        /// </summary>
-        private Texture2D jointTexture;
-
-        /// <summary>
-        /// The origin (center) location of the bone texture.
-        /// </summary>
-        private Vector2 boneOrigin;
-
-        /// <summary>
-        /// The bone texture.
-        /// </summary>
-        private Texture2D boneTexture;
-
-        /// <summary>
-        /// Whether the rendering has been initialized.
-        /// </summary>
-        private bool initialized;
+        public Skeleton currentSkeleton
+        {
+            get;
+            private set;
+        }
 
         /// <summary>
         /// Initializes a new instance of the SkeletonStreamRenderer class.
         /// </summary>
         /// <param name="game">The related game object.</param>
         /// <param name="map">The method used to map the SkeletonPoint to the target space.</param>
-        public SkeletonStreamRenderer(Game game, SkeletonPointMap map)
+        public SkeletonStreamManager(Game game)
             : base(game)
         {
-            this.mapMethod = map;
         }
 
         /// <summary>
@@ -82,7 +42,6 @@ namespace BlockGame
         public override void Initialize()
         {
             base.Initialize();
-            this.initialized = true;
         }
 
         /// <summary>
@@ -92,7 +51,9 @@ namespace BlockGame
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-
+            lastSkeletonUpdate += gameTime.ElapsedGameTime.Milliseconds;
+            if (lastSkeletonUpdate < 30) 
+                return;
             KinectChooser chooser = (KinectChooser)this.Game.Services.GetService(typeof(KinectChooser));
 
             // If the sensor is not found, not running, or not connected, stop now
@@ -103,28 +64,28 @@ namespace BlockGame
                 return;
             }
 
-            // If we have already drawn this skeleton, then we should retrieve a new frame
-            // This prevents us from calling the next frame more than once per update
-            if (skeletonDrawn)
+            using (var skeletonFrame = chooser.Sensor.SkeletonStream.OpenNextFrame(0))
             {
-                using (var skeletonFrame = chooser.Sensor.SkeletonStream.OpenNextFrame(0))
+             // Sometimes we get a null frame back if no data is ready
+                if (null == skeletonFrame)
                 {
-                    // Sometimes we get a null frame back if no data is ready
-                    if (null == skeletonFrame)
-                    {
-                        return;
-                    }
-
-                    // Reallocate if necessary
-                    if (null == skeletonData || skeletonData.Length != skeletonFrame.SkeletonArrayLength)
-                    {
-                        skeletonData = new Skeleton[skeletonFrame.SkeletonArrayLength];
-                    }
-
-                    skeletonFrame.CopySkeletonDataTo(skeletonData);
-                    skeletonDrawn = false;
+                    return;
                 }
-            }
+
+                Skeleton[] skeletons = new Skeleton[skeletonFrame.SkeletonArrayLength];
+                skeletonFrame.CopySkeletonDataTo(skeletons);
+                double candidateDist = Double.MaxValue;
+                currentSkeleton = null;
+                foreach (Skeleton skel in skeletons)
+                {
+                    if (skel.Position.Z < candidateDist && skel.TrackingState == SkeletonTrackingState.Tracked)
+                    {
+                        candidateDist = skel.Position.Z;
+                        currentSkeleton = skel;
+                    }
+                }
+             }
+            lastSkeletonUpdate = 0;
         }
 
     }

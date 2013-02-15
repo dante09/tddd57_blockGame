@@ -17,8 +17,7 @@ namespace BlockGame
         SpriteBatch spriteBatch;
         private BlockGame blockGame;
         private KinectChooser chooser;
-
-
+        private SkeletonStreamManager skeletonManager; 
         private BlockCreationRenderer leftScreen;
 
         public MainGame()
@@ -26,10 +25,11 @@ namespace BlockGame
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
-            this.chooser = new KinectChooser(this, ColorImageFormat.RgbResolution640x480Fps30, DepthImageFormat.Resolution640x480Fps30);
-            this.Components.Add(this.chooser);
-            this.Services.AddService(typeof(KinectChooser), this.chooser);
+            chooser = new KinectChooser(this, ColorImageFormat.RgbResolution640x480Fps30, DepthImageFormat.Resolution640x480Fps30);
+            Components.Add(this.chooser);
+            Services.AddService(typeof(KinectChooser), this.chooser);
 
+            skeletonManager = new SkeletonStreamManager(this);
             leftScreen = new BlockCreationRenderer(this);
             blockGame = new BlockGame(this);
         }
@@ -43,15 +43,17 @@ namespace BlockGame
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-            this.Components.Add(blockGame);
-            this.Components.Add(leftScreen);
+            Components.Add(blockGame);
+            Components.Add(leftScreen);
+            Components.Add(skeletonManager);
+            Services.AddService(typeof(SkeletonStreamManager), skeletonManager);
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
-            this.spriteBatch = new SpriteBatch(GraphicsDevice);
-            this.Services.AddService(typeof(SpriteBatch), spriteBatch);
+            spriteBatch = new SpriteBatch(GraphicsDevice);
+            Services.AddService(typeof(SpriteBatch), spriteBatch);
 
             base.LoadContent();
         }
@@ -83,8 +85,6 @@ namespace BlockGame
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-           
-
             base.Draw(gameTime);
         }
     }
