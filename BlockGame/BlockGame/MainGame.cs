@@ -15,10 +15,11 @@ namespace BlockGame
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        private BlockGame blockGame;
         private KinectChooser chooser;
         private SkeletonStreamManager skeletonManager; 
-        private BlockCreationRenderer leftScreen;
+        private BlockCreationRenderer creationRenderer;
+        private BlockCreationPlayer blockCreator;
+        //private BlockPlacerPlayer blockPlacer;
 
         public MainGame()
         {
@@ -30,8 +31,8 @@ namespace BlockGame
             Services.AddService(typeof(KinectChooser), this.chooser);
 
             skeletonManager = new SkeletonStreamManager(this);
-            leftScreen = new BlockCreationRenderer(this);
-            blockGame = new BlockGame(this);
+            creationRenderer = new BlockCreationRenderer(this);
+            blockCreator = new BlockCreationHumanPlayer();
         }
 
         /// <summary>
@@ -43,8 +44,7 @@ namespace BlockGame
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-            Components.Add(blockGame);
-            Components.Add(leftScreen);
+            Components.Add(creationRenderer);
             Components.Add(skeletonManager);
             Services.AddService(typeof(SkeletonStreamManager), skeletonManager);
             base.Initialize();
@@ -74,9 +74,14 @@ namespace BlockGame
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            // TODO: Add your update logic here
-
             base.Update(gameTime);
+            if (skeletonManager.currentSkeleton != null)
+            {
+                PoseStatus currentPose = blockCreator.GetBlock(skeletonManager.currentSkeleton);
+                System.Diagnostics.Debug.WriteLine(currentPose);
+                creationRenderer.currentPose = currentPose;
+
+            }
         }
 
         /// <summary>

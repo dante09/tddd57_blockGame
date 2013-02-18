@@ -20,11 +20,11 @@ namespace BlockGame
             return new Vector2(skel.Joints[t].Position.X, skel.Joints[t].Position.Y);
         }
 
-        PoseType closestPose;
-        double confidenceLevel;
-        Vector2[] pointsOfInterest;
+        public PoseType closestPose { get; private set; }
+        public double confidenceLevel { get; private set; }
+        public Vector2[] pointsOfInterest { get; private set; }
 
-        public PoseStatus(PoseType closestPose, double confidenceLevel, Skeleton skeleton)
+        public PoseStatus(PoseType closestPose, double confidenceLevel, Skeleton skeleton) : this()
         {
             this.closestPose = closestPose;
             this.confidenceLevel = confidenceLevel;
@@ -33,7 +33,7 @@ namespace BlockGame
                 case PoseType.SQUARE:
                     pointsOfInterest = new Vector2[2];
                     pointsOfInterest[0] = JointToVector2(skeleton, JointType.ElbowLeft);
-                    pointsOfInterest[0] = JointToVector2(skeleton, JointType.ElbowRight);
+                    pointsOfInterest[1] = JointToVector2(skeleton, JointType.ElbowRight);
                     break;
                 case PoseType.NO_POSE:
                 default:

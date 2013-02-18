@@ -38,6 +38,7 @@ namespace BlockGame
 
         private Vector2 position;
         private Vector2 size;
+        public PoseStatus currentPose { private get; set; }
 
         public BlockCreationRenderer(Game game) : base(game)
         {
@@ -132,19 +133,49 @@ namespace BlockGame
                 Game.GraphicsDevice.SetRenderTarget(null);
 
                 // No need to re-render the back buffer until we get new data
-                this.needToRedrawBackBuffer = false;
+                needToRedrawBackBuffer = false;
             }
 
             // Draw scaled image
             spriteBatch.Begin();
             spriteBatch.Draw(
-                this.backBuffer,
+                backBuffer,
                 new Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y),
                 null,
                 Color.White);
             spriteBatch.End();
 
+            drawShape(spriteBatch);
+
             base.Draw(gameTime);
+        }
+
+        private void drawShape(SpriteBatch spriteBatch)
+        {
+
+            //HÄR SLUTADE VI :)
+            CoordinateMapper coordinateMapper = ((KinectChooser)Game.Services.GetService(typeof(KinectChooser))).coordinateMapper;
+            spriteBatch.Begin();
+            switch(currentPose.closestPose){
+                case PoseType.SQUARE:
+                    Vector2 elbowLeft = currentPose.pointsOfInterest[0];
+                    Vector2 elbowRight = currentPose.pointsOfInterest[1];
+                    System.Diagnostics.Debug.WriteLine(elbowLeft);
+                    spriteBatch.Draw(
+                        backBuffer,
+                        new Rectangle((int)elbowLeft.X, (int)elbowLeft.Y, /*(int)elbowRight.X - (int)elbowLeft.X, (int)elbowLeft.Y - (int) elbowRight.Y),*/ 100, 100),
+                        null,
+                        Color.Chocolate);
+                    break;
+                case PoseType.NO_POSE:
+                default:
+                    break;
+            }
+
+
+            spriteBatch.End();
+
+
         }
     }
 }

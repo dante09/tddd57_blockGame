@@ -114,7 +114,6 @@
     <Compile Include="BlockCreationHumanPlayer.cs" />
     <Compile Include="BlockCreationPlayer.cs" />
     <Compile Include="BlockCreationRenderer.cs" />
-    <Compile Include="BlockGame.cs" />
     <Compile Include="KinectChooser.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="PoseHandler.cs" />

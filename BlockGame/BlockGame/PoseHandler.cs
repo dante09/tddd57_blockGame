@@ -20,7 +20,7 @@ namespace BlockGame
 
         public static PoseStatus Evaluate(Skeleton skel)
         {
-            double maxConfidence = Double.MinValue;
+            double maxConfidence = 0.5;
             PoseType closestPose = PoseType.NO_POSE;
             foreach(Pose pose in poses)
             {
