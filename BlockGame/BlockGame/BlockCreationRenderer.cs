@@ -48,7 +48,7 @@ namespace BlockGame
         public override void Initialize()
         {
             base.Initialize();
-            size = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height);
+            size = new Vector2(GraphicsDevice.Viewport.Width/2, GraphicsDevice.Viewport.Height);
             position = new Vector2(0, 0);
 
         }
@@ -158,12 +158,14 @@ namespace BlockGame
             spriteBatch.Begin();
             switch(currentPose.closestPose){
                 case PoseType.SQUARE:
-                    Vector2 elbowLeft = currentPose.pointsOfInterest[0];
-                    Vector2 elbowRight = currentPose.pointsOfInterest[1];
+                    ColorImagePoint elbowLeft = coordinateMapper.MapSkeletonPointToColorPoint(currentPose.pointsOfInterest[0], ColorImageFormat.RgbResolution640x480Fps30);
+                    ColorImagePoint elbowRight = coordinateMapper.MapSkeletonPointToColorPoint(currentPose.pointsOfInterest[1], ColorImageFormat.RgbResolution640x480Fps30);
+                    elbowLeft.X /= 2;
+                    elbowRight.Y /= 2;
                     System.Diagnostics.Debug.WriteLine(elbowLeft);
                     spriteBatch.Draw(
                         backBuffer,
-                        new Rectangle((int)elbowLeft.X, (int)elbowLeft.Y, /*(int)elbowRight.X - (int)elbowLeft.X, (int)elbowLeft.Y - (int) elbowRight.Y),*/ 100, 100),
+                        new Rectangle((int)elbowLeft.X, (int)elbowLeft.Y, /*Math.Abs((int)elbowRight.X - (int)elbowLeft.X), Math.Abs((int)elbowRight.X - (int) elbowLeft.X)*/40,40),
                         null,
                         Color.Chocolate);
                     break;
