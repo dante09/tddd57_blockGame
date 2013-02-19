@@ -52,6 +52,19 @@ namespace BlockGame
 
         }
 
+        protected static double Normalize(double[] values,double[] expectedValues)
+        {
+            double total = 0;
+            for (int i = 0; i < values.Length; i++)
+            {
+                //double tempValue = Math.Max(Math.Abs(expectedValues[i]-values[i]),
+                //    Math.Abs(expectedValues[i]-values[i]-Math.PI));
+                double tempValue = Math.Abs(expectedValues[i] - values[i]);
+                total += (tempValue > 1 ? 1 : tempValue);
+            }
+            return total/expectedValues.Length;
+        }
+
         protected static double Angle(Joint a, Joint b, Joint c)
         {
             double[] ba = { a.Position.X - b.Position.X, a.Position.Y - b.Position.Y, a.Position.Z - b.Position.Z };
