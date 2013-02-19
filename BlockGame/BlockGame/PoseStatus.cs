@@ -14,16 +14,6 @@ namespace BlockGame
     }
     public struct PoseStatus
     {   
-
-        static SkeletonPoint JointToSkeletonPoint(Skeleton skel, JointType t)
-        {
-            SkeletonPoint point = new SkeletonPoint();
-            point.X = skel.Joints[t].Position.X;
-            point.Y = skel.Joints[t].Position.Y;
-            point.Z = skel.Joints[t].Position.Z;
-            return point;
-        }
-
         public PoseType closestPose { get; private set; }
         public double confidenceLevel { get; private set; }
         public SkeletonPoint[] pointsOfInterest { get; private set; }
@@ -36,8 +26,8 @@ namespace BlockGame
             {
                 case PoseType.SQUARE:
                     pointsOfInterest = new SkeletonPoint[2];
-                    pointsOfInterest[0] = JointToSkeletonPoint(skeleton, JointType.ElbowLeft);
-                    pointsOfInterest[1] = JointToSkeletonPoint(skeleton, JointType.ElbowRight);
+                    pointsOfInterest[0] = skeleton.Joints[JointType.ElbowLeft].Position;
+                    pointsOfInterest[1] = skeleton.Joints[JointType.ElbowRight].Position;
                     break;
                 case PoseType.NO_POSE:
                 default:

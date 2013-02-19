@@ -32,6 +32,11 @@ namespace BlockGame
         private Effect kinectDepthVisualizer;
 
         /// <summary>
+        /// The bone texture.
+        /// </summary>
+        private Texture2D texture;
+
+        /// <summary>
         /// Whether or not the back buffer needs updating.
         /// </summary>
         private bool needToRedrawBackBuffer = true;
@@ -39,16 +44,17 @@ namespace BlockGame
         private Vector2 position;
         private Vector2 size;
         public PoseStatus currentPose { private get; set; }
+        private SkeletonStreamRenderer skeletonStreamRenderer;
 
         public BlockCreationRenderer(Game game) : base(game)
         {
-            
+            skeletonStreamRenderer = new SkeletonStreamRenderer(game, this.SkeletonToDepthMap);
         }
 
         public override void Initialize()
         {
             base.Initialize();
-            size = new Vector2(GraphicsDevice.Viewport.Width/2, GraphicsDevice.Viewport.Height);
+            size = new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
             position = new Vector2(0, 0);
 
         }
@@ -57,6 +63,7 @@ namespace BlockGame
         {
             base.LoadContent();
             kinectDepthVisualizer = Game.Content.Load<Effect>("KinectDepthVisualizer");
+            this.texture = Game.Content.Load<Texture2D>("Bone");
         }
 
         public override void Update(GameTime gameTime)
@@ -102,13 +109,15 @@ namespace BlockGame
                 frame.CopyPixelDataTo(this.depthData);
                 this.needToRedrawBackBuffer = true;
             }
-
+        //    this.skeletonStreamRenderer.Update(gameTime);
             base.Update(gameTime);
 
         }
 
         public override void Draw(GameTime gameTime)
         {
+
+
             SpriteBatch spriteBatch = (SpriteBatch)Game.Services.GetService(typeof(SpriteBatch));
 
             if (this.depthTexture == null)
@@ -118,6 +127,7 @@ namespace BlockGame
 
             if (this.needToRedrawBackBuffer)
             {
+
                 // Set the backbuffer and clear
                 Game.GraphicsDevice.SetRenderTarget(this.backBuffer);
                 Game.GraphicsDevice.Clear(ClearOptions.Target, Color.Black, 1.0f, 0);
@@ -128,6 +138,9 @@ namespace BlockGame
                 spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, kinectDepthVisualizer);
                 spriteBatch.Draw(this.depthTexture, Vector2.Zero, Color.White);
                 spriteBatch.End();
+
+                drawShape(spriteBatch);
+             //   this.skeletonStreamRenderer.Draw(gameTime);
 
                 // Reset the render target and prepare to draw scaled image
                 Game.GraphicsDevice.SetRenderTarget(null);
@@ -145,29 +158,29 @@ namespace BlockGame
                 Color.White);
             spriteBatch.End();
 
-            drawShape(spriteBatch);
-
             base.Draw(gameTime);
         }
 
         private void drawShape(SpriteBatch spriteBatch)
         {
-
-            //HÄR SLUTADE VI :)
             CoordinateMapper coordinateMapper = ((KinectChooser)Game.Services.GetService(typeof(KinectChooser))).coordinateMapper;
             spriteBatch.Begin();
             switch(currentPose.closestPose){
                 case PoseType.SQUARE:
-                    ColorImagePoint elbowLeft = coordinateMapper.MapSkeletonPointToColorPoint(currentPose.pointsOfInterest[0], ColorImageFormat.RgbResolution640x480Fps30);
-                    ColorImagePoint elbowRight = coordinateMapper.MapSkeletonPointToColorPoint(currentPose.pointsOfInterest[1], ColorImageFormat.RgbResolution640x480Fps30);
-                    elbowLeft.X /= 2;
-                    elbowRight.Y /= 2;
-                    System.Diagnostics.Debug.WriteLine(elbowLeft);
+                    DepthImagePoint elbowLeft = coordinateMapper.MapSkeletonPointToDepthPoint(currentPose.pointsOfInterest[0], DepthImageFormat.Resolution640x480Fps30);
+                    DepthImagePoint elbowRight = coordinateMapper.MapSkeletonPointToDepthPoint(currentPose.pointsOfInterest[1], DepthImageFormat.Resolution640x480Fps30);
+
+                    double distance = Math.Sqrt(Math.Pow(elbowLeft.Y - elbowRight.Y, 2) + Math.Pow(elbowLeft.X - elbowRight.X, 2));
+                    float rotation = (float)Math.Atan((double)(elbowLeft.Y - elbowRight.Y) / (double)(elbowLeft.X - elbowRight.X));
                     spriteBatch.Draw(
-                        backBuffer,
-                        new Rectangle((int)elbowLeft.X, (int)elbowLeft.Y, /*Math.Abs((int)elbowRight.X - (int)elbowLeft.X), Math.Abs((int)elbowRight.X - (int) elbowLeft.X)*/40,40),
+                        texture,
+                        new Rectangle(elbowLeft.X, elbowLeft.Y, (int)distance,(int)distance),
                         null,
-                        Color.Chocolate);
+                        Color.Chocolate,
+                        rotation,
+                        new Vector2(0,0),
+                        SpriteEffects.None,
+                        0);
                     break;
                 case PoseType.NO_POSE:
                 default:
@@ -179,5 +192,22 @@ namespace BlockGame
 
 
         }
+
+
+
+        private Vector2 SkeletonToDepthMap(SkeletonPoint point)
+        {
+            KinectChooser Chooser = (KinectChooser)Game.Services.GetService(typeof(KinectChooser));
+            if ((null != Chooser.Sensor) && (null != Chooser.Sensor.DepthStream))
+            {
+                // This is used to map a skeleton point to the depth image location
+                var depthPt = Chooser.Sensor.CoordinateMapper.MapSkeletonPointToDepthPoint(point, Chooser.Sensor.DepthStream.Format);
+                return new Vector2(depthPt.X, depthPt.Y);
+            }
+
+            return Vector2.Zero;
+        }
+
+
     }
 }

@@ -78,7 +78,7 @@ namespace BlockGame
             if (skeletonManager.currentSkeleton != null)
             {
                 PoseStatus currentPose = blockCreator.GetBlock(skeletonManager.currentSkeleton);
-                System.Diagnostics.Debug.WriteLine(currentPose);
+                //System.Diagnostics.Debug.WriteLine(currentPose);
                 creationRenderer.currentPose = currentPose;
 
             }

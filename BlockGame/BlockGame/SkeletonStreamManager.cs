@@ -7,13 +7,6 @@ namespace BlockGame
     using Microsoft.Xna.Framework.Graphics;
 
     /// <summary>
-    /// A delegate method explaining how to map a SkeletonPoint from one space to another.
-    /// </summary>
-    /// <param name="point">The SkeletonPoint to map.</param>
-    /// <returns>The Vector2 representing the target location.</returns>
-    public delegate Vector2 SkeletonPointMap(SkeletonPoint point);
-
-    /// <summary>
     /// This class is responsible for rendering a skeleton stream.
     /// </summary>
     public class SkeletonStreamManager : GameComponent

@@ -115,6 +115,7 @@
     <Compile Include="BlockCreationPlayer.cs" />
     <Compile Include="BlockCreationRenderer.cs" />
     <Compile Include="KinectChooser.cs" />
+    <Compile Include="Object2D.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="PoseHandler.cs" />
     <Compile Include="PoseStatus.cs" />
@@ -122,6 +123,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="MainGame.cs" />
     <Compile Include="SkeletonStreamManager.cs" />
+    <Compile Include="SkeletonStreamRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Game.ico" />
