@@ -44,6 +44,7 @@ namespace BlockGame
         private Vector2 position;
         private Vector2 size;
         public PoseStatus currentPose { private get; set; }
+        public double shapeOpacityLevel { private get; set; }
         private SkeletonStreamRenderer skeletonStreamRenderer;
 
         public BlockCreationRenderer(Game game) : base(game)
@@ -165,20 +166,52 @@ namespace BlockGame
         {
             CoordinateMapper coordinateMapper = ((KinectChooser)Game.Services.GetService(typeof(KinectChooser))).coordinateMapper;
             spriteBatch.Begin();
-            switch(currentPose.closestPose){
-                case PoseType.SQUARE:
+            Color color = Color.Chartreuse;
+            color.A = (byte)shapeOpacityLevel;
+            //size of one side of the tetris square
+            double distance;
+            float rotation;
+            switch (currentPose.closestPose)
+            {
+                case PoseType.O:
                     DepthImagePoint elbowLeft = coordinateMapper.MapSkeletonPointToDepthPoint(currentPose.pointsOfInterest[0], DepthImageFormat.Resolution640x480Fps30);
                     DepthImagePoint elbowRight = coordinateMapper.MapSkeletonPointToDepthPoint(currentPose.pointsOfInterest[1], DepthImageFormat.Resolution640x480Fps30);
 
-                    double distance = Math.Sqrt(Math.Pow(elbowLeft.Y - elbowRight.Y, 2) + Math.Pow(elbowLeft.X - elbowRight.X, 2));
-                    float rotation = (float)Math.Atan((double)(elbowLeft.Y - elbowRight.Y) / (double)(elbowLeft.X - elbowRight.X));
+                    distance = Math.Sqrt(Math.Pow(elbowLeft.Y - elbowRight.Y, 2) + Math.Pow(elbowLeft.X - elbowRight.X, 2))/2;
+                    rotation = (float)Math.Atan((double)(elbowLeft.Y - elbowRight.Y) / (double)(elbowLeft.X - elbowRight.X));
                     spriteBatch.Draw(
                         texture,
-                        new Rectangle(elbowLeft.X, elbowLeft.Y, (int)distance,(int)distance),
+                        new Rectangle(elbowLeft.X, elbowLeft.Y, (int)distance*2, (int)distance*2),
                         null,
-                        Color.Chocolate,
+                        color,
                         rotation,
-                        new Vector2(0,0),
+                        new Vector2(0, 0),
+                        SpriteEffects.None,
+                        0);
+                    break;
+                case PoseType.L:
+                    DepthImagePoint wristLeft = coordinateMapper.MapSkeletonPointToDepthPoint(currentPose.pointsOfInterest[0], DepthImageFormat.Resolution640x480Fps30);
+                    DepthImagePoint shoulderCenter = coordinateMapper.MapSkeletonPointToDepthPoint(currentPose.pointsOfInterest[1], DepthImageFormat.Resolution640x480Fps30);
+                    DepthImagePoint spine = coordinateMapper.MapSkeletonPointToDepthPoint(currentPose.pointsOfInterest[2], DepthImageFormat.Resolution640x480Fps30);
+
+                    distance = Math.Sqrt(Math.Pow(wristLeft.Y - shoulderCenter.Y, 2) + Math.Pow(wristLeft.X - shoulderCenter.X, 2))/2;
+                    rotation = (float)-Math.Atan((double)(shoulderCenter.X - spine.X) / (double)(shoulderCenter.Y - spine.Y));
+                    spriteBatch.Draw(
+                        texture,
+                        new Rectangle(shoulderCenter.X - (int)(distance/2), shoulderCenter.Y - (int)(distance/2), (int)distance, (int)(distance*3)),
+                        null,
+                        color,
+                        rotation,
+                        new Vector2(0, 0),
+                        SpriteEffects.None,
+                        0);
+                    spriteBatch.Draw(
+                        texture,
+                        new Rectangle(shoulderCenter.X - (int)(distance/2), shoulderCenter.Y - (int)(distance/2), (int)distance, (int)distance),
+                        null,
+                        color,
+                        (float)(rotation+Math.PI/2),
+                        new Vector2(0, 0),
                         SpriteEffects.None,
                         0);
                     break;

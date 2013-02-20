@@ -21,6 +21,9 @@ namespace BlockGame
         private BlockCreationPlayer blockCreator;
         //private BlockPlacerPlayer blockPlacer;
 
+        private PoseType lastPose = PoseType.NO_POSE;
+        private int poseKeptTime = 0;
+
         public MainGame()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -77,10 +80,16 @@ namespace BlockGame
             base.Update(gameTime);
             if (skeletonManager.currentSkeleton != null)
             {
-                PoseStatus currentPose = blockCreator.GetBlock(skeletonManager.currentSkeleton);
-                //System.Diagnostics.Debug.WriteLine(currentPose);
-                creationRenderer.currentPose = currentPose;
-
+                PoseStatus currentStatus = blockCreator.GetBlock(skeletonManager.currentSkeleton);
+                System.Diagnostics.Debug.WriteLine(currentStatus);
+                if (lastPose != PoseType.NO_POSE && currentStatus.closestPose == lastPose)
+                    poseKeptTime += gameTime.ElapsedGameTime.Milliseconds;
+                else
+                    poseKeptTime = 0;
+                
+                creationRenderer.shapeOpacityLevel = 255*Math.Min((double)poseKeptTime / 2000 , 1.0);
+                creationRenderer.currentPose = currentStatus;
+                lastPose = currentStatus.closestPose;
             }
         }
 

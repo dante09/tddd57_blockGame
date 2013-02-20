@@ -10,7 +10,12 @@ namespace BlockGame
 {
     public enum PoseType
     {
-        [Description("No pose")]NO_POSE, [Description("Square")] SQUARE
+        [Description("No pose")]
+        NO_POSE,
+        [Description("O-pose")]
+        O,
+        [Description("L-pose")]
+        L
     }
     public struct PoseStatus
     {   
@@ -24,10 +29,16 @@ namespace BlockGame
             this.confidenceLevel = confidenceLevel;
             switch (closestPose)
             {
-                case PoseType.SQUARE:
+                case PoseType.O:
                     pointsOfInterest = new SkeletonPoint[2];
                     pointsOfInterest[0] = skeleton.Joints[JointType.ElbowLeft].Position;
                     pointsOfInterest[1] = skeleton.Joints[JointType.ElbowRight].Position;
+                    break;
+                case PoseType.L:
+                    pointsOfInterest = new SkeletonPoint[3];
+                    pointsOfInterest[0] = skeleton.Joints[JointType.WristLeft].Position;
+                    pointsOfInterest[1] = skeleton.Joints[JointType.ShoulderCenter].Position;
+                    pointsOfInterest[2] = skeleton.Joints[JointType.Spine].Position;
                     break;
                 case PoseType.NO_POSE:
                 default:
