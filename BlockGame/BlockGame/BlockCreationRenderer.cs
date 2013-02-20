@@ -168,7 +168,7 @@ namespace BlockGame
             spriteBatch.Begin();
             Color color = Color.Chartreuse;
             color.A = (byte)shapeOpacityLevel;
-            //size of one side of the tetris square
+            //Length of one block unit
             double distance;
             float rotation;
             switch (currentPose.closestPose)

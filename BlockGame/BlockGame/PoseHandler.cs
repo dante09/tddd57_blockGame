@@ -4,13 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Collections;
 using Microsoft.Kinect;
+using System.ComponentModel;
 
 namespace BlockGame
 {
+    //PoseHandler evaluates the current pose with the help of the different Pose-classes to determine the currently performed pose.
     public static class PoseHandler
     {
 
         private static HashSet<Pose> poses;
+        private static double[] features;
         private const double CONFIDENCE_THRESHOLD = 0.70;
 
         static PoseHandler()
@@ -22,11 +25,18 @@ namespace BlockGame
 
         public static PoseStatus Evaluate(Skeleton skel)
         {
+            //All features are extracted once, and the pose evaluators then use the ones they are interested in.
+            features = new double[Enum.GetNames(typeof(Pose.Features)).Length];
+            features[(int)Pose.Features.LEFT_ARM_ANGLE] = Pose.Angle(skel.Joints[JointType.ElbowLeft], skel.Joints[JointType.ShoulderCenter], skel.Joints[JointType.Spine]);
+            features[(int)Pose.Features.RIGHT_ARM_ANGLE] = Pose.Angle(skel.Joints[JointType.ElbowRight], skel.Joints[JointType.ShoulderCenter], skel.Joints[JointType.Spine]);
+            features[(int)Pose.Features.LEFT_ELBOW_ANGLE] = Pose.Angle(skel.Joints[JointType.ShoulderLeft], skel.Joints[JointType.ElbowLeft], skel.Joints[JointType.WristLeft]);
+            features[(int)Pose.Features.RIGHT_ELBOW_ANGLE] = Pose.Angle(skel.Joints[JointType.ShoulderRight], skel.Joints[JointType.ElbowRight], skel.Joints[JointType.WristRight]);
+
             PoseType closestPose = PoseType.NO_POSE;
             double maxConfidence = CONFIDENCE_THRESHOLD;
             foreach(Pose pose in poses)
             {
-                double tempConfidence = pose.Evaluate(skel);
+                double tempConfidence = pose.Evaluate(features);
                 if (tempConfidence > CONFIDENCE_THRESHOLD)
                 {
                     maxConfidence = tempConfidence;
@@ -38,9 +48,23 @@ namespace BlockGame
         }
     }
 
+    //Pose classes are used in PoseHandler to evaluate which pose is currently performed.
     abstract class Pose
     {
-        public abstract double Evaluate(Skeleton skel);
+        public abstract double Evaluate(double[] features);
+
+        //Enumeration of features used in pose evaluation
+        public enum Features
+        {
+            [Description("left arm angle")]
+            LEFT_ARM_ANGLE = 0,
+            [Description("right arm angle")]
+            RIGHT_ARM_ANGLE = 1,
+            [Description("left elbow angle")]
+            LEFT_ELBOW_ANGLE = 2,
+            [Description("right elbow angle")]
+            RIGHT_ELBOW_ANGLE = 3
+        }
 
         public PoseType poseType
         {
@@ -62,24 +86,23 @@ namespace BlockGame
             return Normalize(values, expectedValues, weights);
         }
 
-        // Returns a confidence value between 0 and 1, where 1 is maximum confidence.
-        protected static double Normalize(double[] values, double[] expectedValues, double[] weigths)
+        // Returns a confidence value between 0 and 1, where 1 is maximum confidence, based on the differences between the actual values and the target values. Each value is weighted by its respective weight.
+        protected static double Normalize(double[] values, double[] targetValues, double[] weigths)
         {
             double total = 0;
             double totalMaxValue = 0;
             double maxValue = Math.PI / 6;
             for (int i = 0; i < values.Length; i++)
             {
-                //double tempValue = Math.Max(Math.Abs(expectedValues[i]-values[i]),
-                //    Math.Abs(expectedValues[i]-values[i]-Math.PI));
                 totalMaxValue += weigths[i] * maxValue;
-                double tempValue = Math.Abs(expectedValues[i] - values[i]);
+                double tempValue = Math.Abs(targetValues[i] - values[i]);
                 total += weigths[i] * (tempValue > maxValue ? maxValue : tempValue);
             }
             return 1 - total / totalMaxValue;
         }
 
-        protected static double Angle(Joint a, Joint b, Joint c)
+        //Computes the angle between the vectors b->a and b->c in the xy-plane.
+        public static double Angle(Joint a, Joint b, Joint c)
         {
             double[] ba = { a.Position.X - b.Position.X, a.Position.Y - b.Position.Y};
             double[] bc = { c.Position.X - b.Position.X, c.Position.Y - b.Position.Y};
@@ -97,24 +120,23 @@ namespace BlockGame
         {
         }
 
-        public override double Evaluate(Skeleton skel)
+        public override double Evaluate(double[] features)
         {
-            double[] values = new double[4];
-            //left elbow angle
-            values[0] = Angle(skel.Joints[JointType.ShoulderLeft], skel.Joints[JointType.ElbowLeft], skel.Joints[JointType.WristLeft]);
-            //right elbow angle
-            values[1] = Angle(skel.Joints[JointType.ShoulderRight], skel.Joints[JointType.ElbowRight], skel.Joints[JointType.WristRight]);
-            //left arm angle
-            values[2] = Angle(skel.Joints[JointType.ElbowLeft], skel.Joints[JointType.ShoulderCenter], skel.Joints[JointType.Spine]);
-            //right arm angle
-            values[3] = Angle(skel.Joints[JointType.ElbowRight], skel.Joints[JointType.ShoulderCenter], skel.Joints[JointType.Spine]);
-
+            double[] values = { features[(int)Features.LEFT_ELBOW_ANGLE], 
+                                  features[(int)Features.RIGHT_ELBOW_ANGLE], 
+                                  features[(int)Features.LEFT_ARM_ANGLE], 
+                                  features[(int)Features.RIGHT_ARM_ANGLE] };
             double[] expectedValues = { 1.75, 1.75, 1.35, 1.35 };
+
+            bool handOverShoulder = false;
+            /*
             bool handOverShoulder = skel.Joints[JointType.WristLeft].Position.Y >skel.Joints[JointType.ShoulderCenter].Position.Y ||
                 skel.Joints[JointType.WristRight].Position.Y >skel.Joints[JointType.ShoulderCenter].Position.Y;
+             */
             return (handOverShoulder ? 0 : Normalize(values, expectedValues));
         }
     }
+
     class LPose : Pose
     {
         public LPose()
@@ -122,17 +144,12 @@ namespace BlockGame
         {
         }
 
-        public override double Evaluate(Skeleton skel)
+        public override double Evaluate(double[] features)
         {
-            double[] values = new double[4];
-            //left elbow angle
-            values[0] = Angle(skel.Joints[JointType.ShoulderLeft], skel.Joints[JointType.ElbowLeft], skel.Joints[JointType.WristLeft]);
-            //right elbow angle
-            values[1] = Angle(skel.Joints[JointType.ShoulderRight], skel.Joints[JointType.ElbowRight], skel.Joints[JointType.WristRight]);
-            //left arm angle
-            values[2] = Angle(skel.Joints[JointType.ElbowLeft], skel.Joints[JointType.ShoulderCenter], skel.Joints[JointType.Spine]);
-            //right arm angle
-            values[3] = Angle(skel.Joints[JointType.ElbowRight], skel.Joints[JointType.ShoulderCenter], skel.Joints[JointType.Spine]);
+            double[] values = { features[(int)Features.LEFT_ELBOW_ANGLE], 
+                                  features[(int)Features.RIGHT_ELBOW_ANGLE], 
+                                  features[(int)Features.LEFT_ARM_ANGLE], 
+                                  features[(int)Features.RIGHT_ARM_ANGLE] };
 
             double[] rightArmValues = { values[1], values[3] };
             double[] expectedRightArmValues = { 3, 0.5 };
