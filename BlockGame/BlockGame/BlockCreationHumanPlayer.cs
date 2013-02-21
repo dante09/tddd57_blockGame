@@ -9,7 +9,7 @@ namespace BlockGame
 {
     class BlockCreationHumanPlayer : BlockCreationPlayer
     {
-        override public PoseStatus GetBlock(Skeleton skel)
+        public override PoseStatus GetBlock(Skeleton skel)
         {
             return PoseHandler.Evaluate(skel);
         }
