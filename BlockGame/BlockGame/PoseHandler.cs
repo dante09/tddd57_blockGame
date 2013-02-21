@@ -63,7 +63,13 @@ namespace BlockGame
             [Description("left elbow angle")]
             LEFT_ELBOW_ANGLE = 2,
             [Description("right elbow angle")]
-            RIGHT_ELBOW_ANGLE = 3
+            RIGHT_ELBOW_ANGLE = 3,
+            [Description("left wrist y position")]
+            LEFT_WRIST_Y = 3,
+            [Description("right wrist y position")]
+            RIGHT_WRIST_Y = 3,
+            [Description("shoulder center y position")]
+            SHOULDER_CENTER_Y = 3
         }
 
         public PoseType poseType
