@@ -21,6 +21,8 @@ namespace BlockGame
             poses = new HashSet<Pose>();
             poses.Add(new OPose());
             poses.Add(new LPose());
+            poses.Add(new JPose());
+            poses.Add(new TPose());
         }
 
         public static PoseStatus Evaluate(Skeleton skel)
@@ -31,6 +33,9 @@ namespace BlockGame
             features[(int)Pose.Features.RIGHT_ARM_ANGLE] = Pose.Angle(skel.Joints[JointType.ElbowRight], skel.Joints[JointType.ShoulderCenter], skel.Joints[JointType.Spine]);
             features[(int)Pose.Features.LEFT_ELBOW_ANGLE] = Pose.Angle(skel.Joints[JointType.ShoulderLeft], skel.Joints[JointType.ElbowLeft], skel.Joints[JointType.WristLeft]);
             features[(int)Pose.Features.RIGHT_ELBOW_ANGLE] = Pose.Angle(skel.Joints[JointType.ShoulderRight], skel.Joints[JointType.ElbowRight], skel.Joints[JointType.WristRight]);
+            features[(int)Pose.Features.LEFT_WRIST_Y] = skel.Joints[JointType.WristLeft].Position.Y;
+            features[(int)Pose.Features.RIGHT_WRIST_Y] = skel.Joints[JointType.WristRight].Position.Y;
+            features[(int)Pose.Features.SHOULDER_CENTER_Y] = skel.Joints[JointType.ShoulderCenter].Position.Y;
 
             PoseType closestPose = PoseType.NO_POSE;
             double maxConfidence = CONFIDENCE_THRESHOLD;
@@ -65,11 +70,11 @@ namespace BlockGame
             [Description("right elbow angle")]
             RIGHT_ELBOW_ANGLE = 3,
             [Description("left wrist y position")]
-            LEFT_WRIST_Y = 3,
+            LEFT_WRIST_Y = 4,
             [Description("right wrist y position")]
-            RIGHT_WRIST_Y = 3,
+            RIGHT_WRIST_Y = 5,
             [Description("shoulder center y position")]
-            SHOULDER_CENTER_Y = 3
+            SHOULDER_CENTER_Y = 6
         }
 
         public PoseType poseType
@@ -134,11 +139,13 @@ namespace BlockGame
                                   features[(int)Features.RIGHT_ARM_ANGLE] };
             double[] expectedValues = { 1.75, 1.75, 1.35, 1.35 };
 
-            bool handOverShoulder = false;
-            /*
-            bool handOverShoulder = skel.Joints[JointType.WristLeft].Position.Y >skel.Joints[JointType.ShoulderCenter].Position.Y ||
-                skel.Joints[JointType.WristRight].Position.Y >skel.Joints[JointType.ShoulderCenter].Position.Y;
-             */
+            double[] handOverShoulderValues = { features[(int)Features.LEFT_WRIST_Y], 
+                                                features[(int)Features.RIGHT_WRIST_Y], 
+                                                features[(int)Features.SHOULDER_CENTER_Y] };
+
+            bool handOverShoulder = handOverShoulderValues[0] > handOverShoulderValues[2] ||
+                handOverShoulderValues[1] > handOverShoulderValues[2];
+             
             return (handOverShoulder ? 0 : Normalize(values, expectedValues));
         }
     }
@@ -165,6 +172,50 @@ namespace BlockGame
             double[] expectedLeftArmValues = { 3, 1.35 };
 
             return (!rightArmDown ? 0 : Normalize(leftArmValues, expectedLeftArmValues));
+        }
+    }
+
+    class JPose : Pose
+    {
+        public JPose()
+            : base(PoseType.J)
+        {
+        }
+
+        public override double Evaluate(double[] features)
+        {
+            double[] values = { features[(int)Features.LEFT_ELBOW_ANGLE], 
+                                  features[(int)Features.RIGHT_ELBOW_ANGLE], 
+                                  features[(int)Features.LEFT_ARM_ANGLE], 
+                                  features[(int)Features.RIGHT_ARM_ANGLE] };
+
+            double[] leftArmValues = { values[0], values[2] };
+            double[] expectedLeftArmValues = { 3, 0.5 };
+            bool leftArmDown = Normalize(leftArmValues, expectedLeftArmValues) > 0.75;
+
+            double[] rightArmValues = { values[1], values[3] };
+            double[] expectedRightArmValues = { 3, 1.35 };
+
+            return (!leftArmDown ? 0 : Normalize(rightArmValues, expectedRightArmValues));
+        }
+    }
+
+    class TPose : Pose
+    {
+        public TPose()
+            : base(PoseType.T)
+        {
+        }
+
+        public override double Evaluate(double[] features)
+        {
+            double[] values = { features[(int)Features.LEFT_ELBOW_ANGLE], 
+                                  features[(int)Features.RIGHT_ELBOW_ANGLE], 
+                                  features[(int)Features.LEFT_ARM_ANGLE], 
+                                  features[(int)Features.RIGHT_ARM_ANGLE] };
+            double[] expectedValues = { 3, 3, 1.35, 1.35 };
+
+            return Normalize(values, expectedValues);
         }
     }
 }

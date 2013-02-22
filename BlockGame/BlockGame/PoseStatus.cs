@@ -11,12 +11,17 @@ namespace BlockGame
     public enum PoseType
     {
         [Description("No pose")]
-        NO_POSE,
+        NO_POSE = 0,
         [Description("O-pose")]
-        O,
+        O = 1,
         [Description("L-pose")]
-        L
+        L = 2,
+        [Description("J-pose")]
+        J = 3,
+        [Description("T-pose")]
+        T = 4
     }
+
     public struct PoseStatus
     {   
         public PoseType closestPose { get; private set; }
@@ -39,6 +44,17 @@ namespace BlockGame
                     pointsOfInterest[0] = skeleton.Joints[JointType.WristLeft].Position;
                     pointsOfInterest[1] = skeleton.Joints[JointType.ShoulderCenter].Position;
                     pointsOfInterest[2] = skeleton.Joints[JointType.Spine].Position;
+                    break;
+                case PoseType.J:
+                    pointsOfInterest = new SkeletonPoint[3];
+                    pointsOfInterest[0] = skeleton.Joints[JointType.WristRight].Position;
+                    pointsOfInterest[1] = skeleton.Joints[JointType.ShoulderCenter].Position;
+                    pointsOfInterest[2] = skeleton.Joints[JointType.Spine].Position;
+                    break;
+                case PoseType.T:
+                    pointsOfInterest = new SkeletonPoint[2];
+                    pointsOfInterest[0] = skeleton.Joints[JointType.WristLeft].Position;
+                    pointsOfInterest[1] = skeleton.Joints[JointType.WristRight].Position;
                     break;
                 case PoseType.NO_POSE:
                 default:
