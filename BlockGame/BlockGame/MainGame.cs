@@ -4,6 +4,8 @@ using System.Linq;
 using Microsoft.Kinect;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Reflection;
+using System.ComponentModel;
 
 namespace BlockGame
 {
@@ -52,8 +54,12 @@ namespace BlockGame
             Services.AddService(typeof(KinectChooser), this.chooser);
 
             skeletonManager = new SkeletonStreamManager(this);
-            creationRenderer = new BlockCreationRenderer(this);
+
             placingRenderer = new BlockPlacingRenderer(this);
+
+            blockCreator = new BlockCreationHumanPlayer();
+            creationRenderer = new BlockCreationRenderer(this, blockCreator.shapeSelectionList);
+
         }
 
         /// <summary>
@@ -108,9 +114,8 @@ namespace BlockGame
                     poseKeptTime += gameTime.ElapsedGameTime.Milliseconds;
                 else
                     poseKeptTime = 0;
-                
-                creationRenderer.shapeOpacityLevel = 255*Math.Min((double)poseKeptTime / 2000 , 1.0);
-                creationRenderer.currentPose = currentStatus;
+                creationRenderer.poseKeptTime = poseKeptTime;
+                creationRenderer.currentPoseStatus = currentStatus;
                 lastPose = currentStatus.closestPose;
 
                 //If a pose has been kept for a certain amount of time 

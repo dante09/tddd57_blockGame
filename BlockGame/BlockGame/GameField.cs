@@ -59,7 +59,7 @@ namespace BlockGame
             locked = false;
         }
 
-        private bool Coolision()
+        private bool Collision()
         {
             for (int i = 0; i < humanPosition.Length; i++)
             {
@@ -169,7 +169,7 @@ namespace BlockGame
             }
                 
             bool hasResetHumanPosition = false;
-            if (Coolision())
+            if (Collision())
             {
                 System.Diagnostics.Debug.WriteLine("Coolision");
                 for (int i = 0; i < humanPosition.Length; i++)

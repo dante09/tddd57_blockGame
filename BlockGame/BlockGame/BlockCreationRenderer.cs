@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Kinect;
+using System.Collections;
 
 namespace BlockGame
 {
@@ -36,6 +37,7 @@ namespace BlockGame
         /// </summary>
         private Texture2D texture;
 
+
         /// <summary>
         /// Whether or not the back buffer needs updating.
         /// </summary>
@@ -43,21 +45,28 @@ namespace BlockGame
 
         private Vector2 position;
         private Vector2 size;
-        public PoseStatus currentPose { private get; set; }
-        public double shapeOpacityLevel { private get; set; }
+        public PoseStatus currentPoseStatus { private get; set; }
+        public int poseKeptTime { private get; set; }
+        private Color currentColor;
+        private List<PoseType> shapeSelectionList;
         private SkeletonStreamRenderer skeletonStreamRenderer;
+        private Random colorGenerator;
+        private SpriteFont font;
+        private Vector2 renderDimensions;
 
-        public BlockCreationRenderer(Game game) : base(game)
+        public BlockCreationRenderer(Game game, List<PoseType> shapeSelectionList) : base(game)
         {
             skeletonStreamRenderer = new SkeletonStreamRenderer(game, this.SkeletonToDepthMap);
+            this.shapeSelectionList = shapeSelectionList;
         }
 
         public override void Initialize()
         {
             base.Initialize();
             size = new Vector2(GraphicsDevice.Viewport.Width/2, GraphicsDevice.Viewport.Height);
-            position = new Vector2(0, 0);
 
+            position = new Vector2(0, 0);
+            colorGenerator = new Random();
         }
 
         protected override void LoadContent()
@@ -65,6 +74,7 @@ namespace BlockGame
             base.LoadContent();
             kinectDepthVisualizer = Game.Content.Load<Effect>("KinectDepthVisualizer");
             this.texture = Game.Content.Load<Texture2D>("Bone");
+            this.font = Game.Content.Load<SpriteFont>("Segoe16");
         }
 
         public override void Update(GameTime gameTime)
@@ -137,6 +147,7 @@ namespace BlockGame
                 spriteBatch.End();
 
                 drawShape(spriteBatch);
+                drawShapeSelectionList(spriteBatch);
              //   this.skeletonStreamRenderer.Draw(gameTime);
 
                 // Reset the render target and prepare to draw scaled image
@@ -162,51 +173,112 @@ namespace BlockGame
         {
             CoordinateMapper coordinateMapper = ((KinectChooser)Game.Services.GetService(typeof(KinectChooser))).coordinateMapper;
             spriteBatch.Begin();
-            Color color = Color.Chartreuse;
-            color.A = (byte)shapeOpacityLevel;
+            if (poseKeptTime == 0)
+                currentColor = randomColor();
+            currentColor.A = (byte)(255 * Math.Min((double)poseKeptTime / 2000, 1.0));
             //Length of one block unit
             double distance;
             float rotation;
-            switch (currentPose.closestPose)
+            switch (currentPoseStatus.closestPose)
             {
                 case PoseType.O:
-                    DepthImagePoint elbowLeft = coordinateMapper.MapSkeletonPointToDepthPoint(currentPose.pointsOfInterest[0], DepthImageFormat.Resolution640x480Fps30);
-                    DepthImagePoint elbowRight = coordinateMapper.MapSkeletonPointToDepthPoint(currentPose.pointsOfInterest[1], DepthImageFormat.Resolution640x480Fps30);
+                    DepthImagePoint oElbowLeft = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[0], DepthImageFormat.Resolution640x480Fps30);
+                    DepthImagePoint oElbowRight = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[1], DepthImageFormat.Resolution640x480Fps30);
 
-                    distance = Math.Sqrt(Math.Pow(elbowLeft.Y - elbowRight.Y, 2) + Math.Pow(elbowLeft.X - elbowRight.X, 2))/2;
-                    rotation = (float)Math.Atan((double)(elbowLeft.Y - elbowRight.Y) / (double)(elbowLeft.X - elbowRight.X));
+                    distance = Math.Sqrt(Math.Pow(oElbowLeft.Y - oElbowRight.Y, 2) + Math.Pow(oElbowLeft.X - oElbowRight.X, 2))/2;
+                    rotation = (float)Math.Atan((double)(oElbowLeft.Y - oElbowRight.Y) / (double)(oElbowLeft.X - oElbowRight.X));
                     spriteBatch.Draw(
                         texture,
-                        new Rectangle(elbowLeft.X, elbowLeft.Y, (int)distance*2, (int)distance*2),
+                        new Rectangle(oElbowLeft.X, oElbowLeft.Y, (int)distance*2, (int)distance*2),
                         null,
-                        color,
+                        currentColor,
                         rotation,
                         new Vector2(0, 0),
                         SpriteEffects.None,
                         0);
                     break;
                 case PoseType.L:
-                    DepthImagePoint wristLeft = coordinateMapper.MapSkeletonPointToDepthPoint(currentPose.pointsOfInterest[0], DepthImageFormat.Resolution640x480Fps30);
-                    DepthImagePoint shoulderCenter = coordinateMapper.MapSkeletonPointToDepthPoint(currentPose.pointsOfInterest[1], DepthImageFormat.Resolution640x480Fps30);
-                    DepthImagePoint spine = coordinateMapper.MapSkeletonPointToDepthPoint(currentPose.pointsOfInterest[2], DepthImageFormat.Resolution640x480Fps30);
+                    DepthImagePoint lWristLeft = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[0], DepthImageFormat.Resolution640x480Fps30);
+                    DepthImagePoint lShoulderCenter = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[1], DepthImageFormat.Resolution640x480Fps30);
+                    DepthImagePoint lSpine = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[2], DepthImageFormat.Resolution640x480Fps30);
 
-                    distance = Math.Sqrt(Math.Pow(wristLeft.Y - shoulderCenter.Y, 2) + Math.Pow(wristLeft.X - shoulderCenter.X, 2))/2;
-                    rotation = (float)-Math.Atan((double)(shoulderCenter.X - spine.X) / (double)(shoulderCenter.Y - spine.Y));
+                    distance = Math.Sqrt(Math.Pow(lWristLeft.Y - lShoulderCenter.Y, 2) + Math.Pow(lWristLeft.X - lShoulderCenter.X, 2)) / 2;
+                    rotation = (float)-Math.Atan((double)(lShoulderCenter.X - lSpine.X) / (double)(lShoulderCenter.Y - lSpine.Y));
                     spriteBatch.Draw(
                         texture,
-                        new Rectangle(shoulderCenter.X - (int)(distance/2), shoulderCenter.Y - (int)(distance/2), (int)distance, (int)(distance*3)),
+                        new Rectangle(lShoulderCenter.X - (int)(distance / 2), lShoulderCenter.Y - (int)(distance / 2), (int)distance, (int)(distance * 3)),
                         null,
-                        color,
+                        currentColor,
                         rotation,
                         new Vector2(0, 0),
                         SpriteEffects.None,
                         0);
                     spriteBatch.Draw(
                         texture,
-                        new Rectangle(shoulderCenter.X - (int)(distance/2), shoulderCenter.Y - (int)(distance/2), (int)distance, (int)distance),
+                        new Rectangle(lShoulderCenter.X - (int)(distance / 2), lShoulderCenter.Y - (int)(distance / 2), (int)distance, (int)distance),
                         null,
-                        color,
-                        (float)(rotation+Math.PI/2),
+                        currentColor,
+                        (float)(rotation + Math.PI / 2),
+                        new Vector2(0, 0),
+                        SpriteEffects.None,
+                        0);
+                    break;
+                case PoseType.J:
+                    DepthImagePoint jWristRight = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[0], DepthImageFormat.Resolution640x480Fps30);
+                    DepthImagePoint jShoulderCenter = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[1], DepthImageFormat.Resolution640x480Fps30);
+                    DepthImagePoint jSpine = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[2], DepthImageFormat.Resolution640x480Fps30);
+
+                    distance = Math.Sqrt(Math.Pow(jWristRight.Y - jShoulderCenter.Y, 2) + Math.Pow(jWristRight.X - jShoulderCenter.X, 2)) / 2;
+                    rotation = (float)-Math.Atan((double)(jShoulderCenter.X - jSpine.X) / (double)(jShoulderCenter.Y - jSpine.Y));
+                    spriteBatch.Draw(
+                        texture,
+                        new Rectangle(jShoulderCenter.X + (int)(distance / 2), jShoulderCenter.Y - (int)(distance / 2), (int)distance, (int)distance),
+                        null,
+                        currentColor,
+                        rotation,
+                        new Vector2(0, 0),
+                        SpriteEffects.None,
+                        0);
+                    spriteBatch.Draw(
+                        texture,
+                        new Rectangle(jShoulderCenter.X + (int)(distance / 2), jShoulderCenter.Y - (int)(distance / 2), (int)(distance * 3), (int)distance),
+                        null,
+                        currentColor,
+                        (float)(rotation + Math.PI / 2),
+                        new Vector2(0, 0),
+                        SpriteEffects.None,
+                        0);
+                    break;
+                case PoseType.T:
+                    DepthImagePoint tWristLeft = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[0], DepthImageFormat.Resolution640x480Fps30);
+                    DepthImagePoint tWristRight = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[1], DepthImageFormat.Resolution640x480Fps30);
+
+                    distance = Math.Sqrt(Math.Pow(tWristLeft.Y - tWristRight.Y, 2) + Math.Pow(tWristLeft.X - tWristRight.X, 2)) / 5;
+                    rotation = (float)-Math.Atan((double)(tWristLeft.X - tWristRight.X) / (double)(tWristLeft.Y - tWristRight.Y));
+                    spriteBatch.Draw(
+                        texture,
+                        new Rectangle((int)(tWristLeft.X + 2 * distance), (int)(tWristLeft.Y + distance / 2), (int)distance, (int)distance),
+                        null,
+                        currentColor,
+                        rotation,
+                        new Vector2(0, 0),
+                        SpriteEffects.None,
+                        0);
+                    spriteBatch.Draw(
+                        texture,
+                        new Rectangle((int)(tWristLeft.X + 2 * distance), (int)(tWristLeft.Y + distance / 2), (int)distance, (int)(distance * 2)),
+                        null,
+                        currentColor,
+                        (float)(rotation + Math.PI/2),
+                        new Vector2(0, 0),
+                        SpriteEffects.None,
+                        0);
+                    spriteBatch.Draw(
+                        texture,
+                        new Rectangle((int)(tWristLeft.X + 2 * distance), (int)(tWristLeft.Y + distance / 2), (int)distance, (int)distance),
+                        null,
+                        currentColor,
+                        (float)(rotation + Math.PI),
                         new Vector2(0, 0),
                         SpriteEffects.None,
                         0);
@@ -216,13 +288,122 @@ namespace BlockGame
                     break;
             }
 
-
             spriteBatch.End();
-
 
         }
 
+        private void drawShapeSelectionList(SpriteBatch spriteBatch)
+        {
+            //Bad code, but it solves the centering problem.
+            renderDimensions.X = GraphicsDevice.Viewport.Width;
+            renderDimensions.Y = GraphicsDevice.Viewport.Height;
+            double height = 70;
+            //Distance between shapes and between shapes and edge.
+            double padding = 5;
+            //This is the length of a drawing window for a single tetris block. Every block unit will be of length length/4.
+            double length = height - 2 * padding;
+            Vector2 position = new Vector2((float)padding, (float)padding);
+            int count = 0;
+            spriteBatch.Begin();
+            foreach (PoseType p in shapeSelectionList)
+            {
+                System.Diagnostics.Debug.WriteLine(p.ToString());
+                //Calculating the x-position is a bit tricky.
+                position.X = (float)(renderDimensions.X/2 + (float)(count - (float)(shapeSelectionList.Count/2))*(length + padding) + padding/2);
+                switch (p)
+                {
+                    case PoseType.O:
+                        spriteBatch.Draw(
+                            texture,
+                            new Rectangle((int)(position.X+length/4), (int)(position.Y+length/4), (int)(length/2), (int)length/2),
+                            null,
+                            Color.Red,
+                            0,
+                            new Vector2(0, 0),
+                            SpriteEffects.None,
+                            0);
+                        break;
+                    case PoseType.L:
+                        spriteBatch.Draw(
+                            texture,
+                            new Rectangle((int)(position.X + length / 4), (int)(position.Y + length / 8), (int)(length / 4), (int)length / 4),
+                            null,
+                            Color.Red,
+                            0,
+                            new Vector2(0, 0),
+                            SpriteEffects.None,
+                            0);
+                        spriteBatch.Draw(
+                            texture,
+                            new Rectangle((int)(position.X + length / 2), (int)(position.Y + length / 8), (int)(length / 4), (int)length * 3/4),
+                            null,
+                            Color.Red,
+                            0,
+                            new Vector2(0, 0),
+                            SpriteEffects.None,
+                            0);
+                        break;
+                    case PoseType.J:
+                        spriteBatch.Draw(
+                            texture,
+                            new Rectangle((int)(position.X + length / 2), (int)(position.Y + length / 8), (int)(length / 4), (int)length / 4),
+                            null,
+                            Color.Red,
+                            0,
+                            new Vector2(0, 0),
+                            SpriteEffects.None,
+                            0);
+                        spriteBatch.Draw(
+                            texture,
+                            new Rectangle((int)(position.X + length / 4), (int)(position.Y + length / 8), (int)(length / 4), (int)length * 3 / 4),
+                            null,
+                            Color.Red,
+                            0,
+                            new Vector2(0, 0),
+                            SpriteEffects.None,
+                            0);
+                        break;
+                    case PoseType.T:
+                        spriteBatch.Draw(
+                            texture,
+                            new Rectangle((int)(position.X + length * 3/8), (int)(position.Y + length / 4), (int)(length / 4), (int)length / 4),
+                            null,
+                            Color.Red,
+                            0,
+                            new Vector2(0, 0),
+                            SpriteEffects.None,
+                            0);
+                        spriteBatch.Draw(
+                            texture,
+                            new Rectangle((int)(position.X + length / 8), (int)(position.Y + length / 2), (int)(length *  3/4), (int)length / 4),
+                            null,
+                            Color.Red,
+                            0,
+                            new Vector2(0, 0),
+                            SpriteEffects.None,
+                            0);
+                        break;
+                    case PoseType.NO_POSE:
+                    default:
+                        spriteBatch.DrawString(font, p.ToString(), position, Color.Black);
+                        break;
+                }
 
+                count++;
+            }
+            spriteBatch.End();
+        }
+
+        //Color generation and management should be in MainGame
+        private Color randomColor()
+        {
+            Color color = new Color();
+            color.R = (byte)((50 + colorGenerator.Next(0,999) * 205) / 1000);
+            color.G = (byte)((50 + colorGenerator.Next(0,999) * 205) / 1000);
+            color.B = (byte)((50 + colorGenerator.Next(0,999) * 205) / 1000);
+            color.A = 255;
+            return color;
+        }
 
         private Vector2 SkeletonToDepthMap(SkeletonPoint point)
         {
