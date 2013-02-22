@@ -24,6 +24,8 @@ namespace BlockGame
         ROTATE_LEFT,
         ROTATE_RIGHT,
         GO_DOWN,
+        GO_RIGHT,
+        GO_LEFT,
         NO_MOVE
     }
 }
