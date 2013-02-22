@@ -97,6 +97,9 @@
     <Reference Include="System">
       <Private>False</Private>
     </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml">
       <Private>False</Private>
     </Reference>
@@ -114,6 +117,9 @@
     <Compile Include="BlockCreationHumanPlayer.cs" />
     <Compile Include="BlockCreationPlayer.cs" />
     <Compile Include="BlockCreationRenderer.cs" />
+    <Compile Include="BlockPlacerHumanPlayer.cs" />
+    <Compile Include="BlockPlacerPlayer.cs" />
+    <Compile Include="GameField.cs" />
     <Compile Include="KinectChooser.cs" />
     <Compile Include="Object2D.cs" />
     <Compile Include="Player.cs" />

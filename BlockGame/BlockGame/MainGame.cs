@@ -18,13 +18,22 @@ namespace BlockGame
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         private KinectChooser chooser;
+
+        //Renderers
         private SkeletonStreamManager skeletonManager; 
         private BlockCreationRenderer creationRenderer;
+        //Players
         private BlockCreationPlayer blockCreator;
-        //private BlockPlacerPlayer blockPlacer;
-
+        private BlockPlacerPlayer blockPlacer;
+        //Game field for tetris
+        private GameField gameField;
+        //Diffrent flags to keep record of the state we are in
         private PoseType lastPose = PoseType.NO_POSE;
         private int poseKeptTime = 0;
+        private bool blockLockedIn = false;
+        //Time before a block moves down one step in ms
+        private int tickTime = 500;
+        private int timeSinceLastTick = 0;
 
         public MainGame()
         {
@@ -49,6 +58,9 @@ namespace BlockGame
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+            blockCreator = new BlockCreationHumanPlayer();
+            blockPlacer = new BlockPlacerHumanPlayer();
+            gameField = new GameField();
             Components.Add(creationRenderer);
             Components.Add(skeletonManager);
             Services.AddService(typeof(SkeletonStreamManager), skeletonManager);
@@ -80,10 +92,10 @@ namespace BlockGame
         protected override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-            if (skeletonManager.currentSkeleton != null)
+            if (skeletonManager.currentSkeleton != null&&!blockLockedIn)
             {
                 PoseStatus currentStatus = blockCreator.GetBlock(skeletonManager.currentSkeleton);
-                System.Diagnostics.Debug.WriteLine(currentStatus);
+                //System.Diagnostics.Debug.WriteLine(currentStatus);
                 if (lastPose != PoseType.NO_POSE && currentStatus.closestPose == lastPose)
                     poseKeptTime += gameTime.ElapsedGameTime.Milliseconds;
                 else
@@ -91,6 +103,28 @@ namespace BlockGame
                 creationRenderer.poseKeptTime = poseKeptTime;
                 creationRenderer.currentPoseStatus = currentStatus;
                 lastPose = currentStatus.closestPose;
+
+                //If a pose has been kept for a certain amount of time 
+                if (poseKeptTime >= 255)
+                {
+                    blockLockedIn = true;
+                    gameField.LockShape(currentStatus.closestPose);
+                }
+            }
+
+            if (true/*skeletonManager.currentSkeleton != null*/)
+            {
+                timeSinceLastTick += gameTime.ElapsedGameTime.Milliseconds;
+                PlayerMove move = blockPlacer.PlaceBlock(null);
+                //gameField.MakeMove(move);
+                if (timeSinceLastTick >= tickTime)
+                {
+                    if (gameField.MoveTimeStep())
+                    {
+                        blockLockedIn = false;
+                    }
+                    timeSinceLastTick = 0;
+                }
             }
         }
 
