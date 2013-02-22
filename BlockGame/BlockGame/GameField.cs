@@ -57,7 +57,6 @@ namespace BlockGame
             humanPosition[0].X = width / 2;
             pivotPoint = new Vector2(humanPosition[0].Y, humanPosition[0].X);
             locked = false;
-            LockShape(PoseType.L);
         }
 
         private bool Collision()
@@ -94,7 +93,6 @@ namespace BlockGame
                         shape[3] = new Point(x1-1, humanPosition[0].Y-2);
                         pivotPoint = new Vector2(x1, humanPosition[0].Y - 1);
                         humanPosition = shape;
-                        Rotate(-1);
                         break;
                     case PoseType.O:
                         shape[0] = new Point(x1, humanPosition[0].Y);

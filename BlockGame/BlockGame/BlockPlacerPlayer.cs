@@ -9,14 +9,12 @@ namespace BlockGame
 {
     abstract class BlockPlacerPlayer : Player
     {
-        protected GameField gameField;
 
         public BlockPlacerPlayer()
         {
-            gameField = new GameField();
         }
 
-        public abstract PlayerMove PlaceBlock(Skeleton skel);
+        public abstract PlayerMove PlaceBlock(Skeleton skel,Point blockCenter);
     }
 
     public enum PlayerMove

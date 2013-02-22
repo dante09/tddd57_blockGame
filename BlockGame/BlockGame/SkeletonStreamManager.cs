@@ -13,7 +13,13 @@ namespace BlockGame
     {
         private int lastSkeletonUpdate = 0;
 
-        public Skeleton currentSkeleton
+        public Skeleton creatorPlayer
+        {
+            get;
+            private set;
+        }
+
+        public Skeleton placerPlayer
         {
             get;
             private set;
@@ -67,15 +73,27 @@ namespace BlockGame
 
                 Skeleton[] skeletons = new Skeleton[skeletonFrame.SkeletonArrayLength];
                 skeletonFrame.CopySkeletonDataTo(skeletons);
-                double candidateDist = Double.MaxValue;
-                currentSkeleton = null;
+                double candidateDist1, candidateDist2 = candidateDist1 = Double.MaxValue;
+                creatorPlayer = null;
+                placerPlayer = null;
                 foreach (Skeleton skel in skeletons)
                 {
-                    if (skel.Position.Z < candidateDist && skel.TrackingState == SkeletonTrackingState.Tracked)
+                    if (skel.Position.Z < candidateDist1 && skel.TrackingState == SkeletonTrackingState.Tracked)
                     {
-                        candidateDist = skel.Position.Z;
-                        currentSkeleton = skel;
+                        candidateDist1 = skel.Position.Z;
+                        creatorPlayer = skel;
                     }
+                    else if (skel.Position.Z < candidateDist2 && skel.TrackingState == SkeletonTrackingState.Tracked)
+                    {
+                        candidateDist2 = skel.Position.Z;
+                        placerPlayer = skel;
+                    }
+                }
+                if (creatorPlayer!=null && placerPlayer != null && creatorPlayer.Position.X > placerPlayer.Position.X)
+                {
+                    Skeleton temp = creatorPlayer;
+                    creatorPlayer = placerPlayer;
+                    placerPlayer = creatorPlayer;
                 }
              }
             lastSkeletonUpdate = 0;
