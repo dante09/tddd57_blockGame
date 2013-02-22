@@ -119,6 +119,7 @@
     <Compile Include="BlockCreationRenderer.cs" />
     <Compile Include="BlockPlacerHumanPlayer.cs" />
     <Compile Include="BlockPlacerPlayer.cs" />
+    <Compile Include="BlockPlacingRenderer.cs" />
     <Compile Include="GameField.cs" />
     <Compile Include="KinectChooser.cs" />
     <Compile Include="Object2D.cs" />

@@ -100,7 +100,6 @@ namespace BlockGame
                 // Sometimes we get a null frame back if no data is ready
                 if (null == frame)
                     return;
-
                 // Reallocate values if necessary
                 if (null == depthData || depthData.Length != frame.PixelDataLength)
                 {
@@ -135,7 +134,6 @@ namespace BlockGame
         public override void Draw(GameTime gameTime)
         {
             SpriteBatch spriteBatch = (SpriteBatch)Game.Services.GetService(typeof(SpriteBatch));
-
             if (this.depthTexture == null)
             {
                 return;
