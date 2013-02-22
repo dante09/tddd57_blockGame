@@ -64,7 +64,7 @@ namespace BlockGame
         {
             base.Initialize();
             renderDimensions = new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
-            size = new Vector2(renderDimensions.X, renderDimensions.Y);
+            size = new Vector2(renderDimensions.X/2, renderDimensions.Y);
             position = new Vector2(0, 0);
             colorGenerator = new Random();
         }
@@ -79,6 +79,13 @@ namespace BlockGame
 
         public override void Update(GameTime gameTime)
         {
+
+
+            System.Diagnostics.Debug.Write("Renderer sees: ");
+            for (int i = 0; i < shapeSelectionList.Count; i++)
+                System.Diagnostics.Debug.Write(shapeSelectionList[i].ToString() + " ");
+            System.Diagnostics.Debug.WriteLine("");
+
             KinectChooser chooser = (KinectChooser)this.Game.Services.GetService(typeof(KinectChooser));
 
             if (null == chooser.Sensor ||
@@ -127,8 +134,6 @@ namespace BlockGame
 
         public override void Draw(GameTime gameTime)
         {
-
-
             SpriteBatch spriteBatch = (SpriteBatch)Game.Services.GetService(typeof(SpriteBatch));
 
             if (this.depthTexture == null)
@@ -258,13 +263,13 @@ namespace BlockGame
                     DepthImagePoint tWristRight = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[1], DepthImageFormat.Resolution640x480Fps30);
 
                     distance = Math.Sqrt(Math.Pow(tWristLeft.Y - tWristRight.Y, 2) + Math.Pow(tWristLeft.X - tWristRight.X, 2)) / 5;
-                    rotation = (float)-Math.Atan((double)(tWristLeft.X - tWristRight.X) / (double)(tWristLeft.Y - tWristRight.Y));
+                    rotation = (float)Math.Atan((double)(tWristLeft.Y - tWristRight.Y) / (double)(tWristLeft.X - tWristRight.X));
                     spriteBatch.Draw(
                         texture,
                         new Rectangle((int)(tWristLeft.X + 2 * distance), (int)(tWristLeft.Y + distance / 2), (int)distance, (int)distance),
                         null,
                         currentColor,
-                        rotation,
+                        (float)(rotation),
                         new Vector2(0, 0),
                         SpriteEffects.None,
                         0);
@@ -273,7 +278,7 @@ namespace BlockGame
                         new Rectangle((int)(tWristLeft.X + 2 * distance), (int)(tWristLeft.Y + distance / 2), (int)distance, (int)(distance * 2)),
                         null,
                         currentColor,
-                        (float)(rotation + Math.PI/2),
+                        (float)(rotation - Math.PI/2),
                         new Vector2(0, 0),
                         SpriteEffects.None,
                         0);
@@ -282,7 +287,7 @@ namespace BlockGame
                         new Rectangle((int)(tWristLeft.X + 2 * distance), (int)(tWristLeft.Y + distance / 2), (int)distance, (int)distance),
                         null,
                         currentColor,
-                        (float)(rotation + Math.PI),
+                        (float)(rotation - Math.PI),
                         new Vector2(0, 0),
                         SpriteEffects.None,
                         0);
@@ -311,7 +316,6 @@ namespace BlockGame
             spriteBatch.Begin();
             foreach (PoseType p in shapeSelectionList)
             {
-                System.Diagnostics.Debug.WriteLine(p.ToString());
                 //Calculating the x-position is a bit tricky.
                 position.X = (float)(renderDimensions.X/2 + (float)(count - (float)(shapeSelectionList.Count/2))*(length + padding) + padding/2);
                 switch (p)
@@ -370,7 +374,7 @@ namespace BlockGame
                     case PoseType.T:
                         spriteBatch.Draw(
                             texture,
-                            new Rectangle((int)(position.X + length * 3/8), (int)(position.Y + length / 4), (int)(length / 4), (int)length / 4),
+                            new Rectangle((int)(position.X + length * 3/8), (int)(position.Y + length / 2), (int)(length / 4), (int)length / 4),
                             null,
                             Color.Red,
                             0,
@@ -379,7 +383,7 @@ namespace BlockGame
                             0);
                         spriteBatch.Draw(
                             texture,
-                            new Rectangle((int)(position.X + length / 8), (int)(position.Y + length / 2), (int)(length *  3/4), (int)length / 4),
+                            new Rectangle((int)(position.X + length / 8), (int)(position.Y + length / 4), (int)(length *  3/4), (int)length / 4),
                             null,
                             Color.Red,
                             0,

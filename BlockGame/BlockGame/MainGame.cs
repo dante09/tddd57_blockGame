@@ -58,7 +58,6 @@ namespace BlockGame
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-            blockCreator = new BlockCreationHumanPlayer();
             blockPlacer = new BlockPlacerHumanPlayer();
             gameField = new GameField();
             Components.Add(creationRenderer);
@@ -95,7 +94,6 @@ namespace BlockGame
             if (skeletonManager.currentSkeleton != null&&!blockLockedIn)
             {
                 PoseStatus currentStatus = blockCreator.GetBlock(skeletonManager.currentSkeleton);
-                //System.Diagnostics.Debug.WriteLine(currentStatus);
                 if (lastPose != PoseType.NO_POSE && currentStatus.closestPose == lastPose)
                     poseKeptTime += gameTime.ElapsedGameTime.Milliseconds;
                 else
@@ -105,9 +103,10 @@ namespace BlockGame
                 lastPose = currentStatus.closestPose;
 
                 //If a pose has been kept for a certain amount of time 
-                if (poseKeptTime >= 255)
+                if (poseKeptTime >= 2000)
                 {
                     blockLockedIn = true;
+                    blockCreator.RemoveShape(currentStatus.closestPose);
                     gameField.LockShape(currentStatus.closestPose);
                 }
             }

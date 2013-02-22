@@ -123,7 +123,7 @@
     <Compile Include="KinectChooser.cs" />
     <Compile Include="Object2D.cs" />
     <Compile Include="Player.cs" />
-    <Compile Include="PoseHandler.cs" />
+    <Compile Include="Pose.cs" />
     <Compile Include="PoseStatus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />

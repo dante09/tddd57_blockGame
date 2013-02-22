@@ -12,35 +12,41 @@ namespace BlockGame
     {
         public List<PoseType> shapeSelectionList { private set; get; }
         protected Random shapeGenerator;
-        protected const int SHAPE_SELECTION_LIST_SIZE = 5;
+        //The starting and maximum size of the shape selection list.
+        protected const int MAX_LIST_SIZE = 3;
+        //The minimum size of the shape selection list. When the list shrinks below this size, it will be repopulated.
+        //0 < MIN_LIST_SIZE <= MAX_LIST_SIZE
+        protected const int MIN_LIST_SIZE = 1;
 
         public BlockCreationPlayer()
         {
             shapeSelectionList = new List<PoseType>();
             shapeGenerator = new Random();
             //Populate the shapeSelectionList
-            for (int i = 0; i < SHAPE_SELECTION_LIST_SIZE; i++)
-                addShape();
+            for (int i = 0; i < MAX_LIST_SIZE; i++)
+                AddShape();
         }
 
         public abstract PoseStatus GetBlock(Skeleton skel);
 
-        public void replaceShape(PoseType poseType)
+        protected void RepopulateList()
         {
-            removeShape(poseType);
-            addShape();
+            for (int i = shapeSelectionList.Count; i < MAX_LIST_SIZE; i++)
+                AddShape();
         }
 
-        private void removeShape(PoseType poseType)
+        public void RemoveShape(PoseType poseType)
         {
             if (!shapeSelectionList.Contains(poseType))
                 throw new System.InvalidOperationException("shapeSelectionList does not contain any " + poseType.ToString() + " PoseType.");
             shapeSelectionList.Remove(poseType);
+            if (shapeSelectionList.Count < MIN_LIST_SIZE)
+                RepopulateList();
         }
 
-        protected void addShape()
+        protected void AddShape()
         {
-            if (shapeSelectionList.Count >= SHAPE_SELECTION_LIST_SIZE)
+            if (shapeSelectionList.Count >= MAX_LIST_SIZE)
                 throw new System.InvalidOperationException("Trying to insert shape while shapeSelectionList is full.");
             //Complicated expression to avoid the NO_POSE type.
             PoseType poseType = (PoseType)(1 + (shapeGenerator.Next(0, 999) * (Enum.GetNames(typeof(PoseType)).Length - 1)) / 1000);
