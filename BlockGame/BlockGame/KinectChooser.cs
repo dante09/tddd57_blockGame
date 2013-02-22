@@ -53,7 +53,8 @@
 
             KinectSensor.KinectSensors.StatusChanged += this.KinectSensors_StatusChanged;
             this.DiscoverSensor();
-            coordinateMapper = Sensor.CoordinateMapper;
+            if(Sensor !=null)
+                coordinateMapper = Sensor.CoordinateMapper;
             this.statusMap.Add(KinectStatus.Connected, string.Empty);
             this.statusMap.Add(KinectStatus.DeviceNotGenuine, "Device Not Genuine");
             this.statusMap.Add(KinectStatus.DeviceNotSupported, "Device Not Supported");

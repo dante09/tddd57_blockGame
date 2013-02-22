@@ -20,6 +20,7 @@ namespace BlockGame
         //Renderers
         private SkeletonStreamManager skeletonManager; 
         private BlockCreationRenderer creationRenderer;
+        private BlockPlacingRenderer placingRenderer;
         //Players
         private BlockCreationPlayer blockCreator;
         private BlockPlacerPlayer blockPlacer;
@@ -33,9 +34,17 @@ namespace BlockGame
         private int tickTime = 500;
         private int timeSinceLastTick = 0;
 
+        private int width = 1000;
+        //private readonly Rectangle viewPortRectangle;
+
         public MainGame()
         {
             graphics = new GraphicsDeviceManager(this);
+            this.graphics.PreferredBackBufferWidth = width;
+            this.graphics.PreferredBackBufferHeight = (int)((double)2/3*width);
+            this.graphics.PreparingDeviceSettings += this.GraphicsDevicePreparingDeviceSettings;
+            this.graphics.SynchronizeWithVerticalRetrace = true;
+            //this.viewPortRectangle = new Rectangle(10, 80, width - 20, ((width - 2) / 4) * 3);
             Content.RootDirectory = "Content";
 
             chooser = new KinectChooser(this, ColorImageFormat.RgbResolution640x480Fps30, DepthImageFormat.Resolution640x480Fps30);
@@ -44,6 +53,7 @@ namespace BlockGame
 
             skeletonManager = new SkeletonStreamManager(this);
             creationRenderer = new BlockCreationRenderer(this);
+            placingRenderer = new BlockPlacingRenderer(this);
         }
 
         /// <summary>
@@ -58,6 +68,7 @@ namespace BlockGame
             blockCreator = new BlockCreationHumanPlayer();
             blockPlacer = new BlockPlacerHumanPlayer();
             gameField = new GameField();
+            Components.Add(placingRenderer);
             Components.Add(creationRenderer);
             Components.Add(skeletonManager);
             Services.AddService(typeof(SkeletonStreamManager), skeletonManager);
@@ -89,9 +100,9 @@ namespace BlockGame
         protected override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-            if (skeletonManager.currentSkeleton != null&&!blockLockedIn)
+            if (skeletonManager.creatorPlayer != null && !blockLockedIn)
             {
-                PoseStatus currentStatus = blockCreator.GetBlock(skeletonManager.currentSkeleton);
+                PoseStatus currentStatus = blockCreator.GetBlock(skeletonManager.creatorPlayer);
                 //System.Diagnostics.Debug.WriteLine(currentStatus);
                 if (lastPose != PoseType.NO_POSE && currentStatus.closestPose == lastPose)
                     poseKeptTime += gameTime.ElapsedGameTime.Milliseconds;
@@ -103,17 +114,17 @@ namespace BlockGame
                 lastPose = currentStatus.closestPose;
 
                 //If a pose has been kept for a certain amount of time 
-                if (poseKeptTime >= 255)
+                if (poseKeptTime >= 2000)
                 {
                     blockLockedIn = true;
                     gameField.LockShape(currentStatus.closestPose);
                 }
             }
 
-            if (true/*skeletonManager.currentSkeleton != null*/)
+            if (skeletonManager.creatorPlayer != null)
             {
                 timeSinceLastTick += gameTime.ElapsedGameTime.Milliseconds;
-                PlayerMove move = blockPlacer.PlaceBlock(null);
+                PlayerMove move = blockPlacer.PlaceBlock(null,new Point(0,0));
                 //gameField.MakeMove(move);
                 if (timeSinceLastTick >= tickTime)
                 {
@@ -124,6 +135,7 @@ namespace BlockGame
                     timeSinceLastTick = 0;
                 }
             }
+            base.Update(gameTime);
         }
 
         /// <summary>
@@ -132,7 +144,22 @@ namespace BlockGame
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+            GraphicsDevice.Clear(Color.White);
             base.Draw(gameTime);
         }
+
+        /// <summary>
+        /// This method ensures that we can render to the back buffer without
+        /// losing the data we already had in our previous back buffer.  This
+        /// is necessary for the SkeletonStreamRenderer.
+        /// </summary>
+        /// <param name="sender">The sending object.</param>
+        /// <param name="e">The event args.</param>
+        private void GraphicsDevicePreparingDeviceSettings(object sender, PreparingDeviceSettingsEventArgs e)
+        {
+            // This is necessary because we are rendering to back buffer/render targets and we need to preserve the data
+            e.GraphicsDeviceInformation.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
+        }
+
     }
 }

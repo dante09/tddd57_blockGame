@@ -55,7 +55,7 @@ namespace BlockGame
         public override void Initialize()
         {
             base.Initialize();
-            size = new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+            size = new Vector2(GraphicsDevice.Viewport.Width/2, GraphicsDevice.Viewport.Height);
             position = new Vector2(0, 0);
 
         }
@@ -83,7 +83,6 @@ namespace BlockGame
                 // Sometimes we get a null frame back if no data is ready
                 if (null == frame)
                     return;
-
                 // Reallocate values if necessary
                 if (null == depthData || depthData.Length != frame.PixelDataLength)
                 {
@@ -117,10 +116,7 @@ namespace BlockGame
 
         public override void Draw(GameTime gameTime)
         {
-
-
             SpriteBatch spriteBatch = (SpriteBatch)Game.Services.GetService(typeof(SpriteBatch));
-
             if (this.depthTexture == null)
             {
                 return;
