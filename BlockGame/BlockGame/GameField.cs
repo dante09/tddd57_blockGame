@@ -161,6 +161,17 @@ namespace BlockGame
             throw new NotImplementedException();
         }
 
+        private void move(int direction)
+        {
+            /*
+            Point[] tempMove = humanPosition;
+            for(int I)
+            {
+
+            }
+             * */
+        }
+
         //direction should be 1 for clockwise rotation -1 for counter-closkwise
         private void Rotate(int direction)
         {

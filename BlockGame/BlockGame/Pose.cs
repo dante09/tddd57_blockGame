@@ -29,7 +29,9 @@ namespace BlockGame
             [Description("right wrist y position")]
             RIGHT_WRIST_Y = 5,
             [Description("shoulder center y position")]
-            SHOULDER_CENTER_Y = 6
+            SHOULDER_CENTER_Y = 6,
+            [Description("head y position")]
+            HEAD_Y = 7
         }
 
         public PoseType poseType
@@ -171,6 +173,34 @@ namespace BlockGame
             double[] expectedValues = { 3, 3, 1.35, 1.35 };
 
             return Normalize(values, expectedValues);
+        }
+    }
+
+    class IPose : Pose
+    {
+        public IPose()
+            : base(PoseType.I)
+        {
+        }
+
+        public override double Evaluate(double[] features)
+        {
+            double[] values = { features[(int)Features.LEFT_ELBOW_ANGLE], 
+                                  features[(int)Features.RIGHT_ELBOW_ANGLE], 
+                                  features[(int)Features.LEFT_ARM_ANGLE], 
+                                  features[(int)Features.RIGHT_ARM_ANGLE] };
+            double[] expectedValues = { Math.PI / 4, Math.PI / 4, 1.35, 1.35 };
+
+            System.Diagnostics.Debug.WriteLine("V1: " + values[0] + "V2: " + values[1] + "V3: " + values[2] + "V4: " + values[3]);
+            double[] handsOverHeadValues = { features[(int)Features.LEFT_WRIST_Y], 
+                                                features[(int)Features.RIGHT_WRIST_Y], 
+                                                features[(int)Features.HEAD_Y] };
+
+            bool handsOverHead = handsOverHeadValues[0] > handsOverHeadValues[2] &&
+    handsOverHeadValues[1] > handsOverHeadValues[2];
+             
+
+            return (handsOverHead ? 1 : 0);
         }
     }
 }

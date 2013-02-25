@@ -278,6 +278,21 @@ namespace BlockGame
                         SpriteEffects.None,
                         0);
                     break;
+                case PoseType.I:
+                    DepthImagePoint iHands = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[0], DepthImageFormat.Resolution640x480Fps30);
+                    DepthImagePoint iSpine = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[1], DepthImageFormat.Resolution640x480Fps30);
+                    distance =  Math.Sqrt(Math.Pow(iHands.Y - iSpine.Y, 2) + Math.Pow(iHands.X - iSpine.X, 2)) / 4;
+                    rotation = (float)-Math.Atan((double)(iHands.X - iSpine.X) / (double)(iHands.Y - iSpine.Y));
+                    spriteBatch.Draw(
+                        texture,
+                        new Rectangle((int)(iHands.X - distance / 2), (int)(iHands.Y + distance / 2), (int)distance, (int)distance * 4),
+                        null,
+                        currentColor,
+                        (float)(rotation),
+                        new Vector2(0, 0),
+                        SpriteEffects.None,
+                        0);
+                    break;
                 case PoseType.NO_POSE:
                 default:
                     break;
@@ -370,6 +385,17 @@ namespace BlockGame
                         spriteBatch.Draw(
                             texture,
                             new Rectangle((int)(position.X + length / 8), (int)(position.Y + length / 4), (int)(length *  3/4), (int)length / 4),
+                            null,
+                            Color.Red,
+                            0,
+                            new Vector2(0, 0),
+                            SpriteEffects.None,
+                            0);
+                        break;
+                    case PoseType.I:
+                        spriteBatch.Draw(
+                            texture,
+                            new Rectangle((int)(position.X + length * 3 / 8), (int)(position.Y ), (int)(length / 4), (int)length),
                             null,
                             Color.Red,
                             0,

@@ -19,7 +19,9 @@ namespace BlockGame
         [Description("J-pose")]
         J = 3,
         [Description("T-pose")]
-        T = 4
+        T = 4,
+        [Description("I-pose")]
+        I = 5
     }
 
     public struct PoseStatus
@@ -55,6 +57,11 @@ namespace BlockGame
                     pointsOfInterest = new SkeletonPoint[2];
                     pointsOfInterest[0] = skeleton.Joints[JointType.WristLeft].Position;
                     pointsOfInterest[1] = skeleton.Joints[JointType.WristRight].Position;
+                    break;
+                case PoseType.I:
+                    pointsOfInterest = new SkeletonPoint[2];
+                    pointsOfInterest[0] = skeleton.Joints[JointType.WristRight].Position;
+                    pointsOfInterest[1] = skeleton.Joints[JointType.Spine].Position;
                     break;
                 case PoseType.NO_POSE:
                 default:
