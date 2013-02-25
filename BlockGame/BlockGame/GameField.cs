@@ -130,6 +130,7 @@ namespace BlockGame
                     default:
                         break;
                 }
+                MoveHumanBlock(1);
                 locked = true;
             }
         }
@@ -141,8 +142,10 @@ namespace BlockGame
                 case PlayerMove.GO_DOWN:
                     break;
                 case PlayerMove.GO_LEFT:
+                    MoveHumanBlock(-1);
                     break;
                 case PlayerMove.GO_RIGHT:
+                    MoveHumanBlock(1);
                     break;
                 case PlayerMove.ROTATE_LEFT:
                     if(pivotPoint.X > 0 && pivotPoint.X < width-1 && pivotPoint.Y < height-1 
@@ -161,15 +164,21 @@ namespace BlockGame
             throw new NotImplementedException();
         }
 
-        private void move(int direction)
+        private void MoveHumanBlock(int direction)
         {
-            /*
-            Point[] tempMove = humanPosition;
-            for(int I)
+            Point[] tempMove = { humanPosition[0], humanPosition[1], humanPosition[2], humanPosition[3]};
+            bool movedOutsideScreen = false;
+            for(int i = 0; i < tempMove.Length;i++)
             {
-
+                if (tempMove[i].X > 0)
+                {
+                    tempMove[i].X +=direction;
+                    movedOutsideScreen = tempMove[i].X < 0;
+                }
             }
-             * */
+
+            if (!movedOutsideScreen)
+                humanPosition = tempMove;
         }
 
         //direction should be 1 for clockwise rotation -1 for counter-closkwise

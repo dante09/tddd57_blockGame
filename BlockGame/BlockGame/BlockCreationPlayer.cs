@@ -13,7 +13,7 @@ namespace BlockGame
         public List<PoseType> shapeSelectionList { private set; get; }
         protected Random shapeGenerator;
         //The starting and maximum size of the shape selection list.
-        protected const int MAX_LIST_SIZE = 3;
+        protected const int MAX_LIST_SIZE = 7;
         //The minimum size of the shape selection list. When the list shrinks below this size, it will be repopulated.
         //0 < MIN_LIST_SIZE <= MAX_LIST_SIZE
         protected const int MIN_LIST_SIZE = 1;
