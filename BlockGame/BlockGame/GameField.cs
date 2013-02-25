@@ -24,7 +24,7 @@ namespace BlockGame
             get;
             private set;
         }
-        Vector2 pivotPoint;
+        public Vector2 pivotPoint;
         public Point[] lastPlacedBlock { get; private set; }
         private bool locked;
         private bool gameOver;
@@ -54,7 +54,7 @@ namespace BlockGame
 
         private void ResetHumanPosition()
         {
-            humanColor = Color.Black;
+            humanColor = Color.Red;
             lastPlacedBlock = humanPosition;
             for (int i = 0; i < humanPosition.Length; i++)
             {
@@ -141,8 +141,10 @@ namespace BlockGame
                 case PlayerMove.GO_DOWN:
                     break;
                 case PlayerMove.GO_LEFT:
+                    Move(-1);
                     break;
                 case PlayerMove.GO_RIGHT:
+                    Move(1);
                     break;
                 case PlayerMove.ROTATE_LEFT:
                     if(pivotPoint.X > 0 && pivotPoint.X < width-1 && pivotPoint.Y < height-1 
@@ -158,14 +160,13 @@ namespace BlockGame
                 default:
                     break;
             }
-            throw new NotImplementedException();
         }
 
         //direction should be 1 for clockwise rotation -1 for counter-closkwise
         private void Rotate(int direction)
         {
             System.Diagnostics.Debug.WriteLine("Rotate");
-            for (int i = 0; i < humanPosition.Length ;i++ )
+            for (int i = 0; i < humanPosition.Length; i++)
             {
                 Vector2 translationCoordinate = new Vector2(humanPosition[i].X - pivotPoint.X, humanPosition[i].Y - pivotPoint.Y);
                 translationCoordinate.Y *= direction;
@@ -174,13 +175,24 @@ namespace BlockGame
                     (float)Math.Truncate((double)translationCoordinate.X));
 
                 rotatedCoordinate.Y *= direction;
-              // System.Diagnostics.Debug.WriteLine(rotatedCoordinate.Y + " " + rotatedCoordinate.X); 
+                // System.Diagnostics.Debug.WriteLine(rotatedCoordinate.Y + " " + rotatedCoordinate.X); 
                 rotatedCoordinate.X += pivotPoint.X;
-                rotatedCoordinate.Y += pivotPoint.Y;      
+                rotatedCoordinate.Y += pivotPoint.Y;
 
                 humanPosition[i].X = (int)Math.Truncate(rotatedCoordinate.X);
                 humanPosition[i].Y = (int)Math.Truncate(rotatedCoordinate.Y);
                 //System.Diagnostics.Debug.WriteLine(humanPosition[i].X + " " + humanPosition[i].Y); 
+            }
+        }
+
+        //Direction should be 1 for right, -1 for left.
+        private void Move(int direction)
+        {
+            System.Diagnostics.Debug.WriteLine("Move");
+            for (int i = 0; i < humanPosition.Length; i++)
+            {
+                humanPosition[i].X += direction;
+                pivotPoint.X += direction;
             }
         }
 

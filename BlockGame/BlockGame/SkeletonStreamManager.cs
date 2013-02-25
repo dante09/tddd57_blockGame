@@ -89,7 +89,7 @@ namespace BlockGame
                         placerPlayer = skel;
                     }
                 }
-                if (creatorPlayer!=null && placerPlayer != null && creatorPlayer.Position.X > placerPlayer.Position.X)
+                if (creatorPlayer!=null && placerPlayer != null && creatorPlayer.Position.X < placerPlayer.Position.X)
                 {
                     Skeleton temp = creatorPlayer;
                     creatorPlayer = placerPlayer;

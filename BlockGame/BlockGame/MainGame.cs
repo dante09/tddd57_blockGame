@@ -33,7 +33,7 @@ namespace BlockGame
         private int poseKeptTime = 0;
         private bool blockLockedIn = false;
         //Time before a block moves down one step in ms
-        private int tickTime = 500;
+        private const int tickTime = 500;
         private int timeSinceLastTick = 0;
 
         private int width = 1000;
@@ -78,6 +78,7 @@ namespace BlockGame
             Components.Add(creationRenderer);
             Components.Add(skeletonManager);
             Services.AddService(typeof(SkeletonStreamManager), skeletonManager);
+            creationRenderer.currentColor = RandomColor();
             base.Initialize();
         }
 
@@ -114,7 +115,7 @@ namespace BlockGame
                 {
                     poseKeptTime += gameTime.ElapsedGameTime.Milliseconds;
                 }
-                else if (poseKeptTime > 1000)
+                else if (poseKeptTime > 500)
                 {
                     creationRenderer.currentColor = RandomColor();
                     poseKeptTime = 0;
@@ -133,7 +134,6 @@ namespace BlockGame
                     blockLockedIn = true;
                     blockCreator.RemoveShape(currentStatus.closestPose);
                     gameField.LockShape(currentStatus.closestPose, creationRenderer.currentColor);
-                    creationRenderer.currentColor = RandomColor();
                 }
             }
 
@@ -141,16 +141,20 @@ namespace BlockGame
             if(true)
             {
                 timeSinceLastTick += gameTime.ElapsedGameTime.Milliseconds;
-                PlayerMove move = blockPlacer.PlaceBlock(null,new Point(0,0));
-                //gameField.MakeMove(move);
+                PlayerMove move = blockPlacer.PlaceBlock(skeletonManager.placerPlayer, new Point((int)gameField.pivotPoint.X, (int)gameField.pivotPoint.Y));
+                gameField.MakeMove(move);
                 if (timeSinceLastTick >= tickTime)
                 {
                     if (gameField.MoveTimeStep())
                     {
+                        //When releasing a locked block, generate a new color.
+                        if(blockLockedIn)
+                            creationRenderer.currentColor = RandomColor();
                         blockLockedIn = false;
                     }
                     timeSinceLastTick = 0;
                 }
+                placingRenderer.animationFactor = (double)timeSinceLastTick / (double)tickTime;
             }
             base.Update(gameTime);
         }
