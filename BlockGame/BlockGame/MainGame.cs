@@ -111,14 +111,18 @@ namespace BlockGame
                 PoseStatus currentStatus = blockCreator.GetBlock(skeletonManager.creatorPlayer);
                 //System.Diagnostics.Debug.WriteLine(currentStatus);
                 if (lastPose != PoseType.NO_POSE && currentStatus.closestPose == lastPose)
+                {
                     poseKeptTime += gameTime.ElapsedGameTime.Milliseconds;
-                else if (poseKeptTime > 500)
+                }
+                else if (poseKeptTime > 1000)
                 {
                     creationRenderer.currentColor = RandomColor();
                     poseKeptTime = 0;
                 }
                 else
+                {
                     poseKeptTime = 0;
+                }
                 creationRenderer.poseKeptTime = poseKeptTime;
                 creationRenderer.currentPoseStatus = currentStatus;
                 lastPose = currentStatus.closestPose;
