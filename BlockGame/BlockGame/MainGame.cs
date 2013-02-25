@@ -37,7 +37,8 @@ namespace BlockGame
         private int timeSinceLastTick = 0;
 
         private int width = 1000;
-        //private readonly Rectangle viewPortRectangle;
+
+        private Random colorGenerator;
 
         public MainGame()
         {
@@ -55,7 +56,8 @@ namespace BlockGame
 
             skeletonManager = new SkeletonStreamManager(this);
 
-            placingRenderer = new BlockPlacingRenderer(this);
+            gameField = new GameField();
+            placingRenderer = new BlockPlacingRenderer(this, gameField);
 
             blockCreator = new BlockCreationHumanPlayer();
             creationRenderer = new BlockCreationRenderer(this, blockCreator.shapeSelectionList);
@@ -70,9 +72,8 @@ namespace BlockGame
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
+            colorGenerator = new Random();
             blockPlacer = new BlockPlacerHumanPlayer();
-            gameField = new GameField();
             Components.Add(placingRenderer);
             Components.Add(creationRenderer);
             Components.Add(skeletonManager);
@@ -111,6 +112,11 @@ namespace BlockGame
                 //System.Diagnostics.Debug.WriteLine(currentStatus);
                 if (lastPose != PoseType.NO_POSE && currentStatus.closestPose == lastPose)
                     poseKeptTime += gameTime.ElapsedGameTime.Milliseconds;
+                else if (poseKeptTime > 500)
+                {
+                    creationRenderer.currentColor = RandomColor();
+                    poseKeptTime = 0;
+                }
                 else
                     poseKeptTime = 0;
                 creationRenderer.poseKeptTime = poseKeptTime;
@@ -122,11 +128,13 @@ namespace BlockGame
                 {
                     blockLockedIn = true;
                     blockCreator.RemoveShape(currentStatus.closestPose);
-                    gameField.LockShape(currentStatus.closestPose);
+                    gameField.LockShape(currentStatus.closestPose, creationRenderer.currentColor);
+                    creationRenderer.currentColor = RandomColor();
                 }
             }
 
-            if (skeletonManager.creatorPlayer != null)
+            //if (skeletonManager.creatorPlayer != null)
+            if(true)
             {
                 timeSinceLastTick += gameTime.ElapsedGameTime.Milliseconds;
                 PlayerMove move = blockPlacer.PlaceBlock(null,new Point(0,0));
@@ -141,6 +149,17 @@ namespace BlockGame
                 }
             }
             base.Update(gameTime);
+        }
+
+        //Color generation and management should be in MainGame
+        private Color RandomColor()
+        {
+            Color color = new Color();
+            color.R = (byte)((50 + colorGenerator.Next(0, 999) * 205) / 1000);
+            color.G = (byte)((50 + colorGenerator.Next(0, 999) * 205) / 1000);
+            color.B = (byte)((50 + colorGenerator.Next(0, 999) * 205) / 1000);
+            color.A = 255;
+            return color;
         }
 
         /// <summary>

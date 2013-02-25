@@ -37,14 +37,18 @@ namespace BlockGame
 
         private Vector2 position;
         private Vector2 size;
+        private GameField gameField;
+        private Texture2D texture;
+        private Vector2 renderDimensions;
 
         /// <summary>
         /// Initializes a new instance of the ColorStreamRenderer class.
         /// </summary>
         /// <param name="game">The related game object.</param>
-        public BlockPlacingRenderer(Game game)
+        public BlockPlacingRenderer(Game game, GameField gameField)
             : base(game)
         {
+            this.gameField = gameField;
         }
 
         /// <summary>
@@ -53,7 +57,8 @@ namespace BlockGame
         public override void Initialize()
         {
             base.Initialize();
-            size = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height);
+            renderDimensions = new Vector2(GraphicsDevice.Viewport.Width/2, GraphicsDevice.Viewport.Height);
+            size = new Vector2(renderDimensions.X, renderDimensions.Y);
             position = new Vector2(GraphicsDevice.Viewport.Width / 2+5, 0);
         }
 
@@ -157,7 +162,51 @@ namespace BlockGame
                 Color.White);
             spriteBatch.End();
 
+            DrawGameField(spriteBatch);
+            DrawActiveBlock(spriteBatch);
+
             base.Draw(gameTime);
+        }
+
+        private void DrawGameField(SpriteBatch spriteBatch)
+        {
+            //Bad code, but it solves the centering problem.
+            renderDimensions.X = GraphicsDevice.Viewport.Width/2;
+            renderDimensions.Y = GraphicsDevice.Viewport.Height;
+            spriteBatch.Begin();
+            for (int x = 0; x < GameField.width; x++)
+                for (int y = 0; y < GameField.height; y++)
+                    if (gameField.field[x, y] == 1)
+                        DrawBlock(spriteBatch, x, y, gameField.fieldColor[x, y]);
+            spriteBatch.End();
+        }
+
+        private void DrawActiveBlock(SpriteBatch spriteBatch)
+        {
+            spriteBatch.Begin();
+            for(int i=0; i<gameField.humanPosition.Length; i++)
+                //Could check both x and y, but doesnt really need to.
+                if(gameField.humanPosition[i].X != -1)
+                    DrawBlock(spriteBatch, gameField.humanPosition[i].X, gameField.humanPosition[i].Y, gameField.humanColor);
+            spriteBatch.End();
+        }
+
+        //Draws a block at the specified coordinates with the specified color.
+        private void DrawBlock(SpriteBatch spriteBatch, int x, int y, Color color)
+        {
+            if (y < GameField.invisibleRows)
+                return;
+            Vector2 size = new Vector2(renderDimensions.X / GameField.width, renderDimensions.Y / (GameField.height - GameField.invisibleRows));
+            Vector2 position = new Vector2(x * size.X + renderDimensions.X, (y-GameField.invisibleRows) * size.Y);
+            spriteBatch.Draw(
+                texture,
+                new Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y),
+                null,
+                color,
+                0,
+                new Vector2(0, 0),
+                SpriteEffects.None,
+                0);
         }
 
         /// <summary>
@@ -166,6 +215,7 @@ namespace BlockGame
         protected override void LoadContent()
         {
             base.LoadContent();
+            this.texture = Game.Content.Load<Texture2D>("Bone");
 
             // This effect is necessary to remap the BGRX byte data we get
             // to the XNA color RGBA format.

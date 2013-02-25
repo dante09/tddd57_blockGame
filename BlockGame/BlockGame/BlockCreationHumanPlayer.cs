@@ -16,10 +16,6 @@ namespace BlockGame
 
         override public PoseStatus GetBlock(Skeleton skel)
         {
-            System.Diagnostics.Debug.Write("Player sees: ");
-            for (int i = 0; i < shapeSelectionList.Count; i++)
-                System.Diagnostics.Debug.Write(shapeSelectionList[i].ToString()+" ");
-            System.Diagnostics.Debug.WriteLine("");
             return PoseHandler.Evaluate(skel, shapeSelectionList);
         }
 

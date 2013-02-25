@@ -10,9 +10,13 @@ namespace BlockGame
     class GameField
     {
         //One means there is a block there, zero no block
-        private int[,] field;
-        private const int width = 10;
-        private const int height = 24;
+        //Origin is top left corner.
+        public int[,] field { get; private set; }
+        public Color[,] fieldColor { get; private set; }
+        public const int width = 10;
+        public const int height = 24;
+        public const int invisibleRows = 4;
+        public Color humanColor;
         //The point -1, -1 represent no block. This is possible in our version of tetris when the block creator has not yet created a block
         //for us to place 
         public Point[] humanPosition
@@ -28,6 +32,7 @@ namespace BlockGame
         public GameField()
         {
             field = new int[width, height];
+            fieldColor = new Color[width, height];
             humanPosition = new Point[4];
             lastPlacedBlock = new Point[4];
             Clear();
@@ -35,11 +40,12 @@ namespace BlockGame
 
         public void Clear()
         {
-            for (int i = 0; i < width; i++)
+            for (int x = 0; x < width; x++)
             {
-                for (int k = 0; k < height; k++)
+                for (int y = 0; y < height; y++)
                 {
-                    field[i, k] = 0;
+                    field[x, y] = 0;
+                    fieldColor[x, y] = Color.Black;
                 }
             }
             gameOver = false;
@@ -48,6 +54,7 @@ namespace BlockGame
 
         private void ResetHumanPosition()
         {
+            humanColor = Color.Black;
             lastPlacedBlock = humanPosition;
             for (int i = 0; i < humanPosition.Length; i++)
             {
@@ -72,11 +79,12 @@ namespace BlockGame
             return false;
         }
 
-        public void LockShape(PoseType pose)
+        public void LockShape(PoseType pose, Color color)
         {
             if (!locked)
             {
-                System.Diagnostics.Debug.WriteLine("LockShape"+pose);
+                humanColor = color;
+                System.Diagnostics.Debug.WriteLine("LockShape "+pose);
                 //Shape might be needed to be moved if at the corner
                 int x1,x2,x = x1 = x2 = humanPosition[0].X;
                 if (x == 0)
@@ -86,20 +94,36 @@ namespace BlockGame
                 Point[] shape = new Point[4];
                 switch (pose)
                 {
+                    case PoseType.O:
+                        shape[0] = new Point(x1, humanPosition[0].Y);
+                        shape[1] = new Point(x1 - 1, humanPosition[0].Y);
+                        shape[2] = new Point(x1, humanPosition[0].Y - 1);
+                        shape[3] = new Point(x1 - 1, humanPosition[0].Y - 1);
+                        pivotPoint = new Vector2((float)(x1 - 0.5), (float)(humanPosition[0].Y - 0.5));
+                        humanPosition = shape;
+                        break;
                     case PoseType.L:
                         shape[0] = new Point(x1, humanPosition[0].Y);
                         shape[1] = new Point(x1, humanPosition[0].Y - 1);
-                        shape[2] = new Point(x1, humanPosition[0].Y-2);
-                        shape[3] = new Point(x1-1, humanPosition[0].Y-2);
+                        shape[2] = new Point(x1, humanPosition[0].Y - 2);
+                        shape[3] = new Point(x1 - 1, humanPosition[0].Y - 2);
                         pivotPoint = new Vector2(x1, humanPosition[0].Y - 1);
                         humanPosition = shape;
                         break;
-                    case PoseType.O:
+                    case PoseType.J:
                         shape[0] = new Point(x1, humanPosition[0].Y);
-                        shape[1] = new Point(x1-1, humanPosition[0].Y);
-                        shape[2] = new Point(x1, humanPosition[0].Y-1);
-                        shape[3] = new Point(x1-1, humanPosition[0].Y-1);
-                        pivotPoint = new Vector2((float)(x1 - 0.5), (float)(humanPosition[0].Y - 0.5));
+                        shape[1] = new Point(x1, humanPosition[0].Y - 1);
+                        shape[2] = new Point(x1, humanPosition[0].Y - 2);
+                        shape[3] = new Point(x1 + 1, humanPosition[0].Y - 2);
+                        pivotPoint = new Vector2(x1, humanPosition[0].Y - 1);
+                        humanPosition = shape;
+                        break;
+                    case PoseType.T:
+                        shape[0] = new Point(x1, humanPosition[0].Y);
+                        shape[1] = new Point(x1 + 1, humanPosition[0].Y);
+                        shape[2] = new Point(x1 + 2, humanPosition[0].Y);
+                        shape[3] = new Point(x1 + 1, humanPosition[0].Y + 1);
+                        pivotPoint = new Vector2(x1 + 1, humanPosition[0].Y);
                         humanPosition = shape;
                         break;
                     case PoseType.NO_POSE:
@@ -171,18 +195,20 @@ namespace BlockGame
             bool hasResetHumanPosition = false;
             if (Collision())
             {
-                System.Diagnostics.Debug.WriteLine("Coolision");
+                System.Diagnostics.Debug.WriteLine("Coolision! Awww yeah! So cool!");
                 for (int i = 0; i < humanPosition.Length; i++)
                 {
                     if (humanPosition[i].X < 0 || humanPosition[i].Y < 0)
                         break;
                     field[humanPosition[i].X, humanPosition[i].Y] = 1;
+                    fieldColor[humanPosition[i].X, humanPosition[i].Y] = humanColor;
+
                 }
                 RemoveRows();
                 //Check if game is over
                 for (int i = 0; i < width; i++)
                 {
-                    for (int k = 0; k < 4; k++)
+                    for (int k = 0; k < invisibleRows; k++)
                     {
                         if (field[i, k] == 1)
                         {

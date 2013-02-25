@@ -47,10 +47,9 @@ namespace BlockGame
         private Vector2 size;
         public PoseStatus currentPoseStatus { private get; set; }
         public int poseKeptTime { private get; set; }
-        private Color currentColor;
+        public Color currentColor;
         private List<PoseType> shapeSelectionList;
         private SkeletonStreamRenderer skeletonStreamRenderer;
-        private Random colorGenerator;
         private SpriteFont font;
         private Vector2 renderDimensions;
 
@@ -66,7 +65,6 @@ namespace BlockGame
             renderDimensions = new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
             size = new Vector2(renderDimensions.X/2, renderDimensions.Y);
             position = new Vector2(0, 0);
-            colorGenerator = new Random();
         }
 
         protected override void LoadContent()
@@ -79,13 +77,6 @@ namespace BlockGame
 
         public override void Update(GameTime gameTime)
         {
-
-
-            System.Diagnostics.Debug.Write("Renderer sees: ");
-            for (int i = 0; i < shapeSelectionList.Count; i++)
-                System.Diagnostics.Debug.Write(shapeSelectionList[i].ToString() + " ");
-            System.Diagnostics.Debug.WriteLine("");
-
             KinectChooser chooser = (KinectChooser)this.Game.Services.GetService(typeof(KinectChooser));
 
             if (null == chooser.Sensor ||
@@ -180,8 +171,6 @@ namespace BlockGame
         {
             CoordinateMapper coordinateMapper = ((KinectChooser)Game.Services.GetService(typeof(KinectChooser))).coordinateMapper;
             spriteBatch.Begin();
-            if (poseKeptTime == 0)
-                currentColor = randomColor();
             currentColor.A = (byte)(255 * Math.Min((double)poseKeptTime / 2000, 1.0));
             //Length of one block unit
             double distance;
@@ -398,17 +387,6 @@ namespace BlockGame
                 count++;
             }
             spriteBatch.End();
-        }
-
-        //Color generation and management should be in MainGame
-        private Color randomColor()
-        {
-            Color color = new Color();
-            color.R = (byte)((50 + colorGenerator.Next(0,999) * 205) / 1000);
-            color.G = (byte)((50 + colorGenerator.Next(0,999) * 205) / 1000);
-            color.B = (byte)((50 + colorGenerator.Next(0,999) * 205) / 1000);
-            color.A = 255;
-            return color;
         }
 
         private Vector2 SkeletonToDepthMap(SkeletonPoint point)
