@@ -191,7 +191,6 @@ namespace BlockGame
                                   features[(int)Features.RIGHT_ARM_ANGLE] };
             double[] expectedValues = { Math.PI / 4, Math.PI / 4, 1.35, 1.35 };
 
-            System.Diagnostics.Debug.WriteLine("V1: " + values[0] + "V2: " + values[1] + "V3: " + values[2] + "V4: " + values[3]);
             double[] handsOverHeadValues = { features[(int)Features.LEFT_WRIST_Y], 
                                                 features[(int)Features.RIGHT_WRIST_Y], 
                                                 features[(int)Features.HEAD_Y] };

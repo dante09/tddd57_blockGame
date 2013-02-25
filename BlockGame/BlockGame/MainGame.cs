@@ -137,11 +137,20 @@ namespace BlockGame
                 }
             }
 
-            //if (skeletonManager.creatorPlayer != null)
-            if(true)
+            if (skeletonManager.creatorPlayer != null)
+           // if(true)
             {
                 timeSinceLastTick += gameTime.ElapsedGameTime.Milliseconds;
-                PlayerMove move = blockPlacer.PlaceBlock(skeletonManager.placerPlayer, new Point((int)gameField.pivotPoint.X, (int)gameField.pivotPoint.Y));
+                //Convert pivot point to a point on the screen
+                
+                Point pivotPoint = new Point((int)(gameField.pivotPoint.X / (GameField.width) * GraphicsDevice.Viewport.Width + 320),
+                    (int)(gameField.pivotPoint.Y / (GameField.height - GameField.invisibleRows - 1) * GraphicsDevice.Viewport.Height + GraphicsDevice.Viewport.Height / 2));
+                DepthImagePoint rightHand = chooser.coordinateMapper.MapSkeletonPointToDepthPoint(skeletonManager.creatorPlayer.Joints[JointType.HandRight].Position, DepthImageFormat.Resolution640x480Fps30);
+                DepthImagePoint leftHand = chooser.coordinateMapper.MapSkeletonPointToDepthPoint(skeletonManager.creatorPlayer.Joints[JointType.HandRight].Position, DepthImageFormat.Resolution640x480Fps30);
+
+                //System.Diagnostics.Debug.WriteLine("ColorImagePoint: " + rightHand.X + " " + rightHand.Y);
+                PlayerMove move = blockPlacer.PlaceBlock(new Point(rightHand.X, rightHand.Y), new Point(leftHand.X, leftHand.Y), pivotPoint);
+
                 gameField.MakeMove(move);
                 if (timeSinceLastTick >= tickTime)
                 {
@@ -159,7 +168,7 @@ namespace BlockGame
             base.Update(gameTime);
         }
 
-        //Color generation and management should be in MainGame
+        //Color generation for blocks
         private Color RandomColor()
         {
             Color color = new Color();

@@ -24,7 +24,14 @@ namespace BlockGame
             get;
             private set;
         }
-        public Vector2 pivotPoint;
+        public Vector2 pivotPoint
+        {
+            get
+            {
+                return _pivotPoint;
+            }
+        }
+        private Vector2 _pivotPoint;
         public Point[] lastPlacedBlock { get; private set; }
         private bool locked;
         private bool gameOver;
@@ -62,7 +69,9 @@ namespace BlockGame
             }
             humanPosition[0].Y = 0;
             humanPosition[0].X = width / 2;
-            pivotPoint = new Vector2(humanPosition[0].Y, humanPosition[0].X);
+            System.Diagnostics.Debug.WriteLine("HEEEEJ: " + humanPosition[0].X);
+            _pivotPoint = new Vector2(humanPosition[0].X, humanPosition[0].Y);
+            System.Diagnostics.Debug.WriteLine("HEEEEJ: " + pivotPoint.X);
             locked = false;
         }
 
@@ -72,6 +81,7 @@ namespace BlockGame
             {
                 if (humanPosition[i].X < 0 || humanPosition[i].Y < 0)
                     continue;
+                System.Diagnostics.Debug.WriteLine(humanPosition[i].Y + " " + humanPosition[i].X);
                 if (humanPosition[i].Y == height - 1 ||humanPosition[i].Y+1>=height
                     || field[humanPosition[i].X, humanPosition[i].Y + 1] == 1)
                     return true;
@@ -99,7 +109,7 @@ namespace BlockGame
                         shape[1] = new Point(x1 - 1, humanPosition[0].Y);
                         shape[2] = new Point(x1, humanPosition[0].Y - 1);
                         shape[3] = new Point(x1 - 1, humanPosition[0].Y - 1);
-                        pivotPoint = new Vector2((float)(x1 - 0.5), (float)(humanPosition[0].Y - 0.5));
+                        _pivotPoint = new Vector2((float)(x1 - 0.5), (float)(humanPosition[0].Y - 0.5));
                         humanPosition = shape;
                         break;
                     case PoseType.L:
@@ -107,7 +117,7 @@ namespace BlockGame
                         shape[1] = new Point(x1, humanPosition[0].Y - 1);
                         shape[2] = new Point(x1, humanPosition[0].Y - 2);
                         shape[3] = new Point(x1 - 1, humanPosition[0].Y - 2);
-                        pivotPoint = new Vector2(x1, humanPosition[0].Y - 1);
+                        _pivotPoint = new Vector2(x1, humanPosition[0].Y - 1);
                         humanPosition = shape;
                         break;
                     case PoseType.J:
@@ -115,7 +125,7 @@ namespace BlockGame
                         shape[1] = new Point(x1, humanPosition[0].Y - 1);
                         shape[2] = new Point(x1, humanPosition[0].Y - 2);
                         shape[3] = new Point(x1 + 1, humanPosition[0].Y - 2);
-                        pivotPoint = new Vector2(x1, humanPosition[0].Y - 1);
+                        _pivotPoint = new Vector2(x1, humanPosition[0].Y - 1);
                         humanPosition = shape;
                         break;
                     case PoseType.T:
@@ -123,14 +133,13 @@ namespace BlockGame
                         shape[1] = new Point(x1 + 1, humanPosition[0].Y);
                         shape[2] = new Point(x1 + 2, humanPosition[0].Y);
                         shape[3] = new Point(x1 + 1, humanPosition[0].Y + 1);
-                        pivotPoint = new Vector2(x1 + 1, humanPosition[0].Y);
+                        _pivotPoint = new Vector2(x1 + 1, humanPosition[0].Y);
                         humanPosition = shape;
                         break;
                     case PoseType.NO_POSE:
                     default:
                         break;
                 }
-                MoveHumanBlock(1);
                 locked = true;
             }
         }
@@ -142,10 +151,10 @@ namespace BlockGame
                 case PlayerMove.GO_DOWN:
                     break;
                 case PlayerMove.GO_LEFT:
-                    MoveHumanBlock(-1);
+                    MoveHumanBlock(1);
                     break;
                 case PlayerMove.GO_RIGHT:
-                    MoveHumanBlock(1);
+                    MoveHumanBlock(-1);
                     break;
                 case PlayerMove.ROTATE_LEFT:
                     if(pivotPoint.X > 0 && pivotPoint.X < width-1 && pivotPoint.Y < height-1 
@@ -169,15 +178,18 @@ namespace BlockGame
             bool movedOutsideScreen = false;
             for(int i = 0; i < tempMove.Length;i++)
             {
-                if (tempMove[i].X > 0)
+                if (tempMove[i].X >= 0)
                 {
                     tempMove[i].X +=direction;
-                    movedOutsideScreen = tempMove[i].X < 0;
+                    movedOutsideScreen = tempMove[i].X < 0 || tempMove[i].X >= width;
                 }
             }
 
             if (!movedOutsideScreen)
+            {
                 humanPosition = tempMove;
+                _pivotPoint.X += direction;
+            }
         }
 
         //direction should be 1 for clockwise rotation -1 for counter-closkwise
@@ -200,17 +212,6 @@ namespace BlockGame
                 humanPosition[i].X = (int)Math.Truncate(rotatedCoordinate.X);
                 humanPosition[i].Y = (int)Math.Truncate(rotatedCoordinate.Y);
                 //System.Diagnostics.Debug.WriteLine(humanPosition[i].X + " " + humanPosition[i].Y); 
-            }
-        }
-
-        //Direction should be 1 for right, -1 for left.
-        private void Move(int direction)
-        {
-            System.Diagnostics.Debug.WriteLine("Move");
-            for (int i = 0; i < humanPosition.Length; i++)
-            {
-                humanPosition[i].X += direction;
-                pivotPoint.X += direction;
             }
         }
 
@@ -252,11 +253,9 @@ namespace BlockGame
             }
             else
             {
-                for (int i = 0; i < humanPosition.Length; i++)
-                {
-                    pivotPoint.Y += 1;
+                _pivotPoint.Y = _pivotPoint.Y + 1;
+                for (int i = 0; i < humanPosition.Length; i++)             
                     humanPosition[i].Y += 1;
-                }
             }
 
             //ENDAST FÖR TEST

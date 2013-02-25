@@ -14,7 +14,7 @@ namespace BlockGame
         {
         }
 
-        public abstract PlayerMove PlaceBlock(Skeleton skel,Point blockCenter);
+        public abstract PlayerMove PlaceBlock(Point rightHand,Point leftHand,Point blockCenter);
     }
 
     public enum PlayerMove
