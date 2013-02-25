@@ -136,6 +136,30 @@ namespace BlockGame
                         _pivotPoint = new Vector2(x1 + 1, humanPosition[0].Y);
                         humanPosition = shape;
                         break;
+                    case PoseType.I:
+                        shape[0] = new Point(x1, humanPosition[0].Y);
+                        shape[1] = new Point(x1, humanPosition[0].Y + 1);
+                        shape[2] = new Point(x1, humanPosition[0].Y + 2);
+                        shape[3] = new Point(x1, humanPosition[0].Y + 3);
+                        _pivotPoint = new Vector2((float)(x1 + 0.5), humanPosition[0].Y + 2);
+                        humanPosition = shape;
+                        break;
+                    case PoseType.S:
+                        shape[0] = new Point(x1, humanPosition[0].Y);
+                        shape[1] = new Point(x1, humanPosition[0].Y + 1);
+                        shape[2] = new Point(x1 + 1, humanPosition[0].Y + 1);
+                        shape[3] = new Point(x1 + 1, humanPosition[0].Y + 2);
+                        _pivotPoint = new Vector2(x1 + 1, humanPosition[0].Y + 1);
+                        humanPosition = shape;
+                        break;
+                    case PoseType.Z:
+                        shape[0] = new Point(x1, humanPosition[0].Y + 1);
+                        shape[1] = new Point(x1, humanPosition[0].Y + 2);
+                        shape[2] = new Point(x1 + 1, humanPosition[0].Y);
+                        shape[3] = new Point(x1 + 1, humanPosition[0].Y + 1);
+                        _pivotPoint = new Vector2(x1 + 1, humanPosition[0].Y + 1);
+                        humanPosition = shape;
+                        break;
                     case PoseType.NO_POSE:
                     default:
                         break;

@@ -31,7 +31,11 @@ namespace BlockGame
             [Description("shoulder center y position")]
             SHOULDER_CENTER_Y = 6,
             [Description("head y position")]
-            HEAD_Y = 7
+            HEAD_Y = 7,
+            [Description("left wrist x position")]
+            LEFT_WRIST_X = 8,
+            [Description("right wrist x position")]
+            RIGHT_WRIST_X = 9
         }
 
         public PoseType poseType
@@ -185,21 +189,69 @@ namespace BlockGame
 
         public override double Evaluate(double[] features)
         {
-            double[] values = { features[(int)Features.LEFT_ELBOW_ANGLE], 
-                                  features[(int)Features.RIGHT_ELBOW_ANGLE], 
-                                  features[(int)Features.LEFT_ARM_ANGLE], 
-                                  features[(int)Features.RIGHT_ARM_ANGLE] };
-            double[] expectedValues = { Math.PI / 4, Math.PI / 4, 1.35, 1.35 };
+            double[] values = { features[(int)Features.LEFT_WRIST_Y], 
+                                  features[(int)Features.RIGHT_WRIST_Y], 
+                                  features[(int)Features.HEAD_Y], 
+                                  features[(int)Features.LEFT_WRIST_X], 
+                                  features[(int)Features.RIGHT_WRIST_X]};
 
-            double[] handsOverHeadValues = { features[(int)Features.LEFT_WRIST_Y], 
-                                                features[(int)Features.RIGHT_WRIST_Y], 
-                                                features[(int)Features.HEAD_Y] };
 
-            bool handsOverHead = handsOverHeadValues[0] > handsOverHeadValues[2] &&
-    handsOverHeadValues[1] > handsOverHeadValues[2];
-             
+            bool handsOverHead = values[0] > values[2] &&
+                 values[1] > values[2];
 
-            return (handsOverHead ? 1 : 0);
+            double handDistance = Math.Sqrt(Math.Pow(values[0] - values[1], 2) + Math.Pow(values[3] - values[4], 2));
+
+            return (handsOverHead ? 1 - handDistance : 0);
+        }
+    }
+
+    class SPose : Pose
+    {
+        public SPose()
+            : base(PoseType.S)
+        {
+        }
+
+        public override double Evaluate(double[] features)
+        {
+            double[] values = { features[(int)Features.LEFT_WRIST_Y], 
+                                  features[(int)Features.RIGHT_WRIST_Y],
+                                  features[(int)Features.SHOULDER_CENTER_Y],
+                                  features[(int)Features.LEFT_ELBOW_ANGLE], 
+                                  features[(int)Features.RIGHT_ELBOW_ANGLE]};
+
+            bool handsOverAndUnderShoulders = values[0] > values[2] &&
+    values[1] < values[2];
+
+            double[] elbowValues = { values[3], values[4] };
+            double[] expectedElbowValues = { 1.7, 1.7 };
+
+            return (handsOverAndUnderShoulders ? Normalize(elbowValues, expectedElbowValues) : 0);
+        }
+    }
+
+    class ZPose : Pose
+    {
+        public ZPose()
+            : base(PoseType.Z)
+        {
+        }
+
+        public override double Evaluate(double[] features)
+        {
+            double[] values = { features[(int)Features.LEFT_WRIST_Y], 
+                                  features[(int)Features.RIGHT_WRIST_Y],
+                                  features[(int)Features.SHOULDER_CENTER_Y],
+                                  features[(int)Features.LEFT_ELBOW_ANGLE], 
+                                  features[(int)Features.RIGHT_ELBOW_ANGLE]};
+
+            bool handsOverAndUnderShoulders = values[0] < values[2] &&
+    values[1] > values[2];
+
+            double[] elbowValues = { values[3], values[4] };
+            double[] expectedElbowValues = { 1.7, 1.7 };
+
+            return (handsOverAndUnderShoulders ? Normalize(elbowValues, expectedElbowValues) : 0);
         }
     }
 }
