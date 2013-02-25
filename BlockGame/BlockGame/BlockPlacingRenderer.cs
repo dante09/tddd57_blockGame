@@ -40,6 +40,7 @@ namespace BlockGame
         private GameField gameField;
         private Texture2D texture;
         private Vector2 renderDimensions;
+        public double animationFactor;
 
         /// <summary>
         /// Initializes a new instance of the ColorStreamRenderer class.
@@ -188,17 +189,15 @@ namespace BlockGame
             for(int i=0; i<gameField.humanPosition.Length; i++)
                 //Could check both x and y, but doesnt really need to.
                 if(gameField.humanPosition[i].X != -1)
-                    DrawBlock(spriteBatch, gameField.humanPosition[i].X, gameField.humanPosition[i].Y, gameField.humanColor);
+                    DrawBlock(spriteBatch, gameField.humanPosition[i].X, (double)gameField.humanPosition[i].Y + (animationFactor-1), gameField.humanColor);
             spriteBatch.End();
         }
 
         //Draws a block at the specified coordinates with the specified color.
-        private void DrawBlock(SpriteBatch spriteBatch, int x, int y, Color color)
+        private void DrawBlock(SpriteBatch spriteBatch, double x, double y, Color color)
         {
-            if (y < GameField.invisibleRows)
-                return;
             Vector2 size = new Vector2(renderDimensions.X / GameField.width, renderDimensions.Y / (GameField.height - GameField.invisibleRows));
-            Vector2 position = new Vector2(x * size.X + renderDimensions.X, (y-GameField.invisibleRows) * size.Y);
+            Vector2 position = new Vector2((float)(x * size.X + renderDimensions.X), (float)((y - GameField.invisibleRows) * size.Y));
             spriteBatch.Draw(
                 texture,
                 new Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y),
