@@ -34,6 +34,7 @@ namespace BlockGame
                 poses.Add(new LPose());
                 poses.Add(new JPose());
                 poses.Add(new TPose());
+                poses.Add(new IPose());
             }
 
             public static PoseStatus Evaluate(Skeleton skel, List<PoseType> selectionList)
@@ -46,6 +47,7 @@ namespace BlockGame
                 features[(int)Pose.Features.RIGHT_ELBOW_ANGLE] = Pose.Angle(skel.Joints[JointType.ShoulderRight], skel.Joints[JointType.ElbowRight], skel.Joints[JointType.WristRight]);
                 features[(int)Pose.Features.LEFT_WRIST_Y] = skel.Joints[JointType.WristLeft].Position.Y;
                 features[(int)Pose.Features.RIGHT_WRIST_Y] = skel.Joints[JointType.WristRight].Position.Y;
+                features[(int)Pose.Features.HEAD_Y] = skel.Joints[JointType.Head].Position.Y;
                 features[(int)Pose.Features.SHOULDER_CENTER_Y] = skel.Joints[JointType.ShoulderCenter].Position.Y;
 
                 PoseType closestPose = PoseType.NO_POSE;
