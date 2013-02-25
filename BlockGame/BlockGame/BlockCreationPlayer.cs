@@ -13,64 +13,26 @@ namespace BlockGame
         public List<PoseType> shapeSelectionList { private set; get; }
         protected Random shapeGenerator;
         //The starting and maximum size of the shape selection list.
-        protected const int MAX_LIST_SIZE = 3;
+        protected const int MAX_LIST_SIZE = 7;
         //The minimum size of the shape selection list. When the list shrinks below this size, it will be repopulated.
         //0 < MIN_LIST_SIZE <= MAX_LIST_SIZE
         protected const int MIN_LIST_SIZE = 1;
-
-        //PoseHandler evaluates the current pose with the help of the different Pose-classes to determine the currently performed pose.
-        public static class PoseHandler
-        {
-
-            private static HashSet<Pose> poses;
-            private static double[] features;
-            private const double CONFIDENCE_THRESHOLD = 0.70;
-
-            static PoseHandler()
-            {
-                poses = new HashSet<Pose>();
-                poses.Add(new OPose());
-                poses.Add(new LPose());
-                poses.Add(new JPose());
-                poses.Add(new TPose());
-                poses.Add(new IPose());
-            }
-
-            public static PoseStatus Evaluate(Skeleton skel)
-            {
-                //All features are extracted once, and the pose evaluators then use the ones they are interested in.
-                features = new double[Enum.GetNames(typeof(Pose.Features)).Length];
-                features[(int)Pose.Features.LEFT_ARM_ANGLE] = Pose.Angle(skel.Joints[JointType.ElbowLeft], skel.Joints[JointType.ShoulderCenter], skel.Joints[JointType.Spine]);
-                features[(int)Pose.Features.RIGHT_ARM_ANGLE] = Pose.Angle(skel.Joints[JointType.ElbowRight], skel.Joints[JointType.ShoulderCenter], skel.Joints[JointType.Spine]);
-                features[(int)Pose.Features.LEFT_ELBOW_ANGLE] = Pose.Angle(skel.Joints[JointType.ShoulderLeft], skel.Joints[JointType.ElbowLeft], skel.Joints[JointType.WristLeft]);
-                features[(int)Pose.Features.RIGHT_ELBOW_ANGLE] = Pose.Angle(skel.Joints[JointType.ShoulderRight], skel.Joints[JointType.ElbowRight], skel.Joints[JointType.WristRight]);
-                features[(int)Pose.Features.LEFT_WRIST_Y] = skel.Joints[JointType.WristLeft].Position.Y;
-                features[(int)Pose.Features.RIGHT_WRIST_Y] = skel.Joints[JointType.WristRight].Position.Y;
-                features[(int)Pose.Features.HEAD_Y] = skel.Joints[JointType.ShoulderCenter].Position.Y;
-
-                PoseType closestPose = PoseType.NO_POSE;
-                double maxConfidence = CONFIDENCE_THRESHOLD;
-                foreach (Pose pose in poses)
-                {
-                    double tempConfidence = pose.Evaluate(features);
-                    if (tempConfidence > CONFIDENCE_THRESHOLD)
-                    {
-                        maxConfidence = tempConfidence;
-                        closestPose = pose.poseType;
-                    }
-                }
-
-                return new PoseStatus(closestPose, maxConfidence, skel);
-            }
-        }
 
         public BlockCreationPlayer()
         {
             shapeSelectionList = new List<PoseType>();
             shapeGenerator = new Random();
             //Populate the shapeSelectionList
-            for (int i = 0; i < MAX_LIST_SIZE; i++)
-                AddShape();
+            //for (int i = 0; i < MAX_LIST_SIZE; i++)
+            //    AddShape();
+
+            shapeSelectionList.Add(PoseType.O);
+            shapeSelectionList.Add(PoseType.L);
+            shapeSelectionList.Add(PoseType.J);
+            shapeSelectionList.Add(PoseType.T);
+            shapeSelectionList.Add(PoseType.I);
+            shapeSelectionList.Add(PoseType.S);
+            shapeSelectionList.Add(PoseType.Z);
         }
 
         public abstract PoseStatus GetBlock(Skeleton skel);

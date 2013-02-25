@@ -110,7 +110,7 @@ namespace BlockGame
             if (skeletonManager.creatorPlayer != null && !blockLockedIn)
             {
                 PoseStatus currentStatus = blockCreator.GetBlock(skeletonManager.creatorPlayer);
-                //System.Diagnostics.Debug.WriteLine(currentStatus);
+                System.Diagnostics.Debug.WriteLine(currentStatus);
                 if (lastPose != PoseType.NO_POSE && currentStatus.closestPose == lastPose)
                 {
                     poseKeptTime += gameTime.ElapsedGameTime.Milliseconds;
