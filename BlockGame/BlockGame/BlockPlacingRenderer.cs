@@ -53,8 +53,8 @@ namespace BlockGame
         public override void Initialize()
         {
             base.Initialize();
-            size = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height);
-            position = new Vector2(GraphicsDevice.Viewport.Width / 2+5, 0);
+            size = new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+            position = new Vector2(0, 0);
         }
 
         /// <summary>
@@ -82,18 +82,18 @@ namespace BlockGame
                     return;
                 }
                 // Reallocate values if necessary
-                if (this.colorData == null || this.colorData.Length != frame.PixelDataLength)
+                if (colorData == null || colorData.Length != frame.PixelDataLength)
                 {
-                    this.colorData = new byte[frame.PixelDataLength];
+                    colorData = new byte[frame.PixelDataLength];
 
-                    this.colorTexture = new Texture2D(
+                    colorTexture = new Texture2D(
                         this.Game.GraphicsDevice, 
                         frame.Width, 
                         frame.Height, 
                         false, 
                         SurfaceFormat.Color);
 
-                    this.backBuffer = new RenderTarget2D(
+                    backBuffer = new RenderTarget2D(
                         this.Game.GraphicsDevice, 
                         frame.Width, 
                         frame.Height, 
@@ -103,8 +103,8 @@ namespace BlockGame
                         this.Game.GraphicsDevice.PresentationParameters.MultiSampleCount, 
                         RenderTargetUsage.PreserveContents);            
                 }
-
-                frame.CopyPixelDataTo(this.colorData);
+                
+                frame.CopyPixelDataTo(colorData);
                 needToRedrawBackBuffer = true;
             }
         }
@@ -128,30 +128,30 @@ namespace BlockGame
                 return;
             }
 
-            if (this.needToRedrawBackBuffer)
+            if (needToRedrawBackBuffer)
             {
                 // Set the backbuffer and clear
                 Game.GraphicsDevice.SetRenderTarget(this.backBuffer);
                 Game.GraphicsDevice.Clear(ClearOptions.Target, Color.Black, 1.0f, 0);
 
-                colorTexture.SetData<byte>(this.colorData);
+                colorTexture.SetData<byte>(colorData);
 
                 // Draw the color image
-                spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, this.kinectColorVisualizer);
-                spriteBatch.Draw(this.colorTexture, Vector2.Zero, Color.White);
+                spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, kinectColorVisualizer);
+                spriteBatch.Draw(colorTexture, Vector2.Zero, Color.White);
                 spriteBatch.End();
 
                 // Reset the render target and prepare to draw scaled image
-                this.Game.GraphicsDevice.SetRenderTargets(null);
+                Game.GraphicsDevice.SetRenderTargets(null);
 
                 // No need to re-render the back buffer until we get new data
-                this.needToRedrawBackBuffer = false;
+                needToRedrawBackBuffer = false;
             }
 
             // Draw the scaled texture
             spriteBatch.Begin();
             spriteBatch.Draw(
-                this.backBuffer,
+                backBuffer,
                 new Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y),
                 null,
                 Color.White);

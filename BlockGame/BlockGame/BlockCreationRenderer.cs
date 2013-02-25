@@ -64,7 +64,7 @@ namespace BlockGame
         {
             base.Initialize();
             renderDimensions = new Vector2(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
-            size = new Vector2(renderDimensions.X/2, renderDimensions.Y);
+            size = new Vector2(GraphicsDevice.Viewport.Width/2, GraphicsDevice.Viewport.Height);
             position = new Vector2(0, 0);
             colorGenerator = new Random();
         }
@@ -103,18 +103,18 @@ namespace BlockGame
                 // Reallocate values if necessary
                 if (null == depthData || depthData.Length != frame.PixelDataLength)
                 {
-                    this.depthData = new short[frame.PixelDataLength];
+                    depthData = new short[frame.PixelDataLength];
 
-                    this.depthTexture = new Texture2D(
+                    depthTexture = new Texture2D(
                         Game.GraphicsDevice,
                         frame.Width,
                         frame.Height,
                         false,
                         SurfaceFormat.Bgra4444);
 
-                    this.backBuffer = new RenderTarget2D(
+                    backBuffer = new RenderTarget2D(
                         Game.GraphicsDevice,
-                        frame.Width,
+                        frame.Width/2,
                         frame.Height,
                         false,
                         SurfaceFormat.Color,
@@ -122,8 +122,7 @@ namespace BlockGame
                         this.Game.GraphicsDevice.PresentationParameters.MultiSampleCount,
                         RenderTargetUsage.PreserveContents);
                 }
-
-                frame.CopyPixelDataTo(this.depthData);
+                frame.CopyPixelDataTo(depthData);
                 this.needToRedrawBackBuffer = true;
             }
         //    this.skeletonStreamRenderer.Update(gameTime);
@@ -146,7 +145,7 @@ namespace BlockGame
                 Game.GraphicsDevice.SetRenderTarget(this.backBuffer);
                 Game.GraphicsDevice.Clear(ClearOptions.Target, Color.Black, 1.0f, 0);
 
-                this.depthTexture.SetData<short>(this.depthData);
+                depthTexture.SetData<short>(depthData);
 
                 // Draw the depth image
                 spriteBatch.Begin(SpriteSortMode.Immediate, null, null, null, null, kinectDepthVisualizer);
