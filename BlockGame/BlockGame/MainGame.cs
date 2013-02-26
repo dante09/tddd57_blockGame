@@ -110,7 +110,6 @@ namespace BlockGame
             if (skeletonManager.creatorPlayer != null && !blockLockedIn)
             {
                 PoseStatus currentStatus = blockCreator.GetBlock(skeletonManager.creatorPlayer);
-                System.Diagnostics.Debug.WriteLine(currentStatus);
                 if (lastPose != PoseType.NO_POSE && currentStatus.closestPose == lastPose)
                 {
                     poseKeptTime += gameTime.ElapsedGameTime.Milliseconds;
@@ -137,19 +136,19 @@ namespace BlockGame
                 }
             }
 
-            if (skeletonManager.creatorPlayer != null)
+            if (skeletonManager.placerPlayer != null)
            // if(true)
             {
                 timeSinceLastTick += gameTime.ElapsedGameTime.Milliseconds;
                 //Convert pivot point to a point on the screen
-                
-                Point pivotPoint = new Point((int)(gameField.pivotPoint.X / (GameField.width) * GraphicsDevice.Viewport.Width + 320),
+
+                Point pivotPoint = new Point((int)(gameField.pivotPoint.X / GameField.width * (GraphicsDevice.Viewport.Width/2 - 100) + GraphicsDevice.Viewport.Width/2 + 100),
                     (int)(gameField.pivotPoint.Y / (GameField.height - GameField.invisibleRows - 1) * GraphicsDevice.Viewport.Height + GraphicsDevice.Viewport.Height / 2));
-                DepthImagePoint rightHand = chooser.coordinateMapper.MapSkeletonPointToDepthPoint(skeletonManager.creatorPlayer.Joints[JointType.HandRight].Position, DepthImageFormat.Resolution640x480Fps30);
-                DepthImagePoint leftHand = chooser.coordinateMapper.MapSkeletonPointToDepthPoint(skeletonManager.creatorPlayer.Joints[JointType.HandRight].Position, DepthImageFormat.Resolution640x480Fps30);
+                DepthImagePoint rightHand = chooser.coordinateMapper.MapSkeletonPointToDepthPoint(skeletonManager.placerPlayer.Joints[JointType.HandRight].Position, DepthImageFormat.Resolution640x480Fps30);
+                DepthImagePoint leftHand = chooser.coordinateMapper.MapSkeletonPointToDepthPoint(skeletonManager.placerPlayer.Joints[JointType.HandLeft].Position, DepthImageFormat.Resolution640x480Fps30);
 
                 //System.Diagnostics.Debug.WriteLine("ColorImagePoint: " + rightHand.X + " " + rightHand.Y);
-                PlayerMove move = blockPlacer.PlaceBlock(new Point(rightHand.X, rightHand.Y), new Point(leftHand.X, leftHand.Y), pivotPoint);
+                PlayerMove move = blockPlacer.PlaceBlock(new Point((int)((double)rightHand.X/640*1000), rightHand.Y), new Point(leftHand.X, leftHand.Y), pivotPoint);
 
                 gameField.MakeMove(move);
                 if (timeSinceLastTick >= tickTime)

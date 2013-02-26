@@ -69,9 +69,7 @@ namespace BlockGame
             }
             humanPosition[0].Y = 0;
             humanPosition[0].X = width / 2;
-            System.Diagnostics.Debug.WriteLine("HEEEEJ: " + humanPosition[0].X);
             _pivotPoint = new Vector2(humanPosition[0].X, humanPosition[0].Y);
-            System.Diagnostics.Debug.WriteLine("HEEEEJ: " + pivotPoint.X);
             locked = false;
         }
 
@@ -175,10 +173,10 @@ namespace BlockGame
                 case PlayerMove.GO_DOWN:
                     break;
                 case PlayerMove.GO_LEFT:
-                    MoveHumanBlock(1);
+                    MoveHumanBlock(-1);
                     break;
                 case PlayerMove.GO_RIGHT:
-                    MoveHumanBlock(-1);
+                    MoveHumanBlock(1);
                     break;
                 case PlayerMove.ROTATE_LEFT:
                     if(pivotPoint.X > 0 && pivotPoint.X < width-1 && pivotPoint.Y < height-1 
@@ -199,17 +197,17 @@ namespace BlockGame
         private void MoveHumanBlock(int direction)
         {
             Point[] tempMove = { humanPosition[0], humanPosition[1], humanPosition[2], humanPosition[3]};
-            bool movedOutsideScreen = false;
+            bool collision = false;
             for(int i = 0; i < tempMove.Length;i++)
             {
                 if (tempMove[i].X >= 0)
                 {
                     tempMove[i].X +=direction;
-                    movedOutsideScreen = tempMove[i].X < 0 || tempMove[i].X >= width;
+                    collision = tempMove[i].X < 0 || tempMove[i].X >= width || field[tempMove[i].X , tempMove[i].Y] == 1;
                 }
             }
 
-            if (!movedOutsideScreen)
+            if (!collision)
             {
                 humanPosition = tempMove;
                 _pivotPoint.X += direction;
@@ -304,7 +302,8 @@ namespace BlockGame
                 for (int k = row; 0 < k; k--)
                 {
 
-                    field[i, k] = field[i,k-1];
+                    field[i, k] = field[i, k - 1];
+                    fieldColor[i, k] = fieldColor[i, k - 1];
                 }
             }
         }

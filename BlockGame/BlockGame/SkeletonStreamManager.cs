@@ -80,6 +80,8 @@ namespace BlockGame
                 {
                     if (skel.Position.Z < candidateDist1 && skel.TrackingState == SkeletonTrackingState.Tracked)
                     {
+                        candidateDist2 = candidateDist1;
+                        placerPlayer = creatorPlayer;
                         candidateDist1 = skel.Position.Z;
                         creatorPlayer = skel;
                     }
@@ -93,7 +95,7 @@ namespace BlockGame
                 {
                     Skeleton temp = creatorPlayer;
                     creatorPlayer = placerPlayer;
-                    placerPlayer = creatorPlayer;
+                    placerPlayer = temp;
                 }
              }
             lastSkeletonUpdate = 0;
