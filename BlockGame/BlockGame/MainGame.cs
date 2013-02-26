@@ -34,7 +34,7 @@ namespace BlockGame
         private bool blockLockedIn = false;
         private bool showSplashScreen = true;
         //Time before a block moves down one step in ms
-        private const int tickTime = 500;
+        private const int tickTime = 1000;
         private int timeSinceLastTick = 0;
 
         private int width = 1000;
@@ -110,6 +110,7 @@ namespace BlockGame
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            gameField.gameSpeed = 1 + 0.1 * gameTime.TotalGameTime.Minutes;
             base.Update(gameTime);
             //Main tetris game loop
             if (!showSplashScreen)
@@ -154,7 +155,7 @@ namespace BlockGame
                     PlayerMove move = blockPlacer.PlaceBlock(placerPlayer);
 
                     gameField.MakeMove(move);
-                    if (timeSinceLastTick >= tickTime)
+                    if (timeSinceLastTick >= tickTime / gameField.gameSpeed)
                     {
                         if (gameField.MoveTimeStep())
                         {
@@ -166,6 +167,11 @@ namespace BlockGame
                         timeSinceLastTick = 0;
                     }
                     placingRenderer.animationFactor = (double)timeSinceLastTick / (double)tickTime;
+                }
+
+                if (gameField.gameOver)
+                {
+                    //TODO: Fix game over logic
                 }
             }
             //Update players chosen from gamemode
@@ -183,6 +189,7 @@ namespace BlockGame
                 if (skeletonManager.placerPlayer.Joints[JointType.WristLeft].Position.Y
                     > skeletonManager.placerPlayer.Joints[JointType.ShoulderCenter].Position.Y)
                 {
+                    //TODO: players should be created here
                     Components.Add(placingRenderer);
                     Components.Add(creationRenderer);
                     showSplashScreen = false;
