@@ -33,7 +33,7 @@ namespace BlockGame
         private int poseKeptTime = 0;
         private bool blockLockedIn = false;
         //Time before a block moves down one step in ms
-        private const int tickTime = 500;
+        private const int tickTime = 1000;
         private int timeSinceLastTick = 0;
 
         private int width = 1000;
@@ -106,6 +106,7 @@ namespace BlockGame
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            gameField.gameSpeed = 1 + 0.1 * gameTime.TotalGameTime.Minutes;
             base.Update(gameTime);
             if (skeletonManager.creatorPlayer != null && !blockLockedIn)
             {
@@ -142,7 +143,7 @@ namespace BlockGame
                 PlayerMove move = blockPlacer.PlaceBlock(skeletonManager.placerPlayer);
               
                 gameField.MakeMove(move);
-                if (timeSinceLastTick >= tickTime)
+                if (timeSinceLastTick >= tickTime/gameSpeed)
                 {
                     if (gameField.MoveTimeStep())
                     {

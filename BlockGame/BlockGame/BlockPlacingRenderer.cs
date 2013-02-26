@@ -39,6 +39,7 @@ namespace BlockGame
         private Vector2 size;
         private GameField gameField;
         private Texture2D texture;
+        private SpriteFont font;
         private Vector2 renderDimensions;
         public double animationFactor;
 
@@ -166,6 +167,7 @@ namespace BlockGame
 
             DrawGameField(spriteBatch);
             DrawActiveBlock(spriteBatch);
+            DrawScoreAndSpeed(spriteBatch);
 
             base.Draw(gameTime);
         }
@@ -209,6 +211,11 @@ namespace BlockGame
                 0);
         }
 
+        private void DrawScoreAndSpeed(SpriteBatch spriteBatch)
+        {
+            spriteBatch.DrawString(font, "Score: " + gameField.score + "\nSpeed: " + (int)(gameField.gameSpeed*100) + "%", new Vector2(0, 0), Color.White);
+        }
+
         /// <summary>
         /// This method loads the Xna effect.
         /// </summary>
@@ -216,6 +223,7 @@ namespace BlockGame
         {
             base.LoadContent();
             this.texture = Game.Content.Load<Texture2D>("Bone");
+            this.font = Game.Content.Load<SpriteFont>("Segoe16");
 
             // This effect is necessary to remap the BGRX byte data we get
             // to the XNA color RGBA format.
