@@ -11,74 +11,45 @@ namespace BlockGame
     {
         public  BlockPlacerHumanPlayer() : base()
         {
-            referencePos = new Queue<Point>();
+            referencePosRight = new Queue<SkeletonPoint>();
+            referencePosLeft = new Queue<SkeletonPoint>();
         }
-        private PlayerMove lastMove = PlayerMove.NO_MOVE;
-        private int moveTracker = 0;
-        private Queue<Point> referencePos;
+
+        private Queue<SkeletonPoint> referencePosLeft;
+        private Queue<SkeletonPoint> referencePosRight;
 
         //For now this returns a gamefield, needs to be changed
-        public override PlayerMove PlaceBlock(Point rightHand,Point leftHand,Point blockCenter)
+        public override PlayerMove PlaceBlock(Skeleton skel)
         {
-            referencePos.Enqueue(rightHand);
-            if (referencePos.Count < 10)
-                return PlayerMove.NO_MOVE;
-            Point point = referencePos.Dequeue();
-            if (rightHand.X > point.X + 250)
+            SkeletonPoint leftHand = skel.Joints[JointType.HandLeft].Position;
+            SkeletonPoint rightHand = skel.Joints[JointType.HandRight].Position;
+            referencePosLeft.Enqueue(leftHand);
+            referencePosRight.Enqueue(rightHand);
+            if (referencePosRight.Count > 9 && referencePosLeft.Count > 9)
             {
-                referencePos.Clear();
-                return PlayerMove.GO_RIGHT;
-            }
-            if (rightHand.X < point.X - 250)
-            {
-                referencePos.Clear();
-                return PlayerMove.GO_LEFT;
-            }
-            //If hand is not far ahead of body, we don't need to make a move
-            //if (rightHand.Position.Z > skel.Joints[JointType.ShoulderCenter].Position.Z+0.3)
-            //     return PlayerMove.NO_MOVE;
-            /*
-            if (rightHand.X > blockCenter.X + 20)
-            {
-                if (lastMove == PlayerMove.GO_RIGHT && moveTracker > 10)
+                SkeletonPoint leftRef = referencePosLeft.Dequeue();
+                SkeletonPoint rightRef = referencePosRight.Dequeue();
+                if (rightHand.X > rightRef.X + 0.4)
                 {
-                    lastMove = PlayerMove.GO_RIGHT;
-                    moveTracker = 0;
+                    referencePosRight.Clear();
                     return PlayerMove.GO_RIGHT;
                 }
-                else if (lastMove == PlayerMove.GO_RIGHT)
+                if (rightHand.X < rightRef.X - 0.4)
                 {
-                    moveTracker++;
-                }
-                else
-                {
-                    moveTracker = 0;
-                }
-                lastMove = PlayerMove.GO_RIGHT;
-                return PlayerMove.NO_MOVE;
-            }
-            if (rightHand.X < blockCenter.X - 20)
-            {
-                if (lastMove == PlayerMove.GO_LEFT && moveTracker > 10)
-                {
-                    lastMove = PlayerMove.GO_LEFT;
-                    moveTracker = 0;
+                    referencePosRight.Clear();
                     return PlayerMove.GO_LEFT;
                 }
-                else if (lastMove == PlayerMove.GO_LEFT)
+                if (leftHand.X > leftRef.X + 0.4)
                 {
-                    moveTracker++;
+                    referencePosLeft.Clear();
+                    return PlayerMove.ROTATE_RIGHT;
                 }
-                else
+                if (leftHand.X < leftRef.X - 0.4)
                 {
-                    moveTracker = 0;
+                    referencePosLeft.Clear();
+                    return PlayerMove.ROTATE_LEFT;
                 }
-                lastMove = PlayerMove.GO_LEFT;
-                return PlayerMove.NO_MOVE;
             }
-            */
-            moveTracker = 0;
-            lastMove = PlayerMove.NO_MOVE;
             return PlayerMove.NO_MOVE;
         }
     }
