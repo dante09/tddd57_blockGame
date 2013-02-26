@@ -9,14 +9,31 @@ namespace BlockGame
 {
     class BlockCreationHumanPlayer : BlockCreationPlayer
     {
+        private PoseType currentPose = PoseType.NO_POSE;
+        private int errorCount = 0;
+
         public BlockCreationHumanPlayer()
             : base()
         {
+            isHuman = true;
         }
 
         override public PoseStatus GetBlock(Skeleton skel)
         {
-            return PoseHandler.Evaluate(skel, shapeSelectionList);
+            PoseStatus poseStatus = PoseHandler.Evaluate(skel, shapeSelectionList);
+
+            if (currentPose != PoseType.NO_POSE && errorCount <= 15 && currentPose != poseStatus.closestPose
+                &&shapeSelectionList.Contains(currentPose))
+            {
+                errorCount++;
+                return new PoseStatus(currentPose, 1, skel);
+            }
+            else
+            {
+                errorCount = 0;
+                currentPose = poseStatus.closestPose;
+                return poseStatus;
+            }
         }
 
         //PoseHandler evaluates the current pose with the help of the different Pose-classes to determine the currently performed pose.
@@ -50,6 +67,7 @@ namespace BlockGame
                 features[(int)Pose.Features.LEFT_WRIST_Y] = skel.Joints[JointType.WristLeft].Position.Y;
                 features[(int)Pose.Features.RIGHT_WRIST_Y] = skel.Joints[JointType.WristRight].Position.Y;
                 features[(int)Pose.Features.HEAD_Y] = skel.Joints[JointType.Head].Position.Y;
+                features[(int)Pose.Features.HEAD_X] = skel.Joints[JointType.Head].Position.X;
                 features[(int)Pose.Features.SHOULDER_CENTER_Y] = skel.Joints[JointType.ShoulderCenter].Position.Y;
                 features[(int)Pose.Features.LEFT_WRIST_X] = skel.Joints[JointType.WristLeft].Position.X;
                 features[(int)Pose.Features.RIGHT_WRIST_X] = skel.Joints[JointType.WristRight].Position.X;

@@ -11,7 +11,7 @@ namespace BlockGame
         public Boolean isHuman
         {
             get;
-            private set;
+            protected set;
         }
 
     }

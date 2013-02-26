@@ -37,7 +37,15 @@
         /// </summary>
         private SpriteFont font;
 
-        public CoordinateMapper coordinateMapper { get; private set; }
+        public CoordinateMapper coordinateMapper 
+        { 
+            get
+            {
+                if (Sensor == null)
+                    return null;
+                return Sensor.CoordinateMapper;
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the KinectChooser class.
@@ -53,8 +61,6 @@
 
             KinectSensor.KinectSensors.StatusChanged += this.KinectSensors_StatusChanged;
             this.DiscoverSensor();
-            if(Sensor !=null)
-                coordinateMapper = Sensor.CoordinateMapper;
             this.statusMap.Add(KinectStatus.Connected, string.Empty);
             this.statusMap.Add(KinectStatus.DeviceNotGenuine, "Device Not Genuine");
             this.statusMap.Add(KinectStatus.DeviceNotSupported, "Device Not Supported");

@@ -38,12 +38,13 @@ namespace BlockGame
         {
             this.closestPose = closestPose;
             this.confidenceLevel = confidenceLevel;
+
             switch (closestPose)
             {
                 case PoseType.O:
                     pointsOfInterest = new SkeletonPoint[2];
-                    pointsOfInterest[0] = skeleton.Joints[JointType.ElbowLeft].Position;
-                    pointsOfInterest[1] = skeleton.Joints[JointType.ElbowRight].Position;
+                    pointsOfInterest[0] = skeleton.Joints[JointType.ShoulderLeft].Position;
+                    pointsOfInterest[1] = skeleton.Joints[JointType.ShoulderRight].Position;
                     break;
                 case PoseType.L:
                     pointsOfInterest = new SkeletonPoint[3];
@@ -71,12 +72,12 @@ namespace BlockGame
                 case PoseType.S:
                     pointsOfInterest = new SkeletonPoint[2];
                     pointsOfInterest[0] = skeleton.Joints[JointType.WristLeft].Position;
-                    pointsOfInterest[1] = skeleton.Joints[JointType.WristRight].Position;
+                    pointsOfInterest[1] = skeleton.Joints[JointType.ShoulderCenter].Position;
                     break;
                 case PoseType.Z:
                     pointsOfInterest = new SkeletonPoint[2];
-                    pointsOfInterest[0] = skeleton.Joints[JointType.WristLeft].Position;
-                    pointsOfInterest[1] = skeleton.Joints[JointType.WristRight].Position;
+                    pointsOfInterest[0] = skeleton.Joints[JointType.WristRight].Position;
+                    pointsOfInterest[1] = skeleton.Joints[JointType.ShoulderCenter].Position;
                     break;
                 case PoseType.NO_POSE:
                 default:

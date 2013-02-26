@@ -174,16 +174,18 @@ namespace BlockGame
             //Length of one block unit
             double distance;
             float rotation;
+            double minDistance = 70;
             switch (currentPoseStatus.closestPose)
             {
                 case PoseType.O:
-                    DepthImagePoint oElbowLeft = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[0], DepthImageFormat.Resolution640x480Fps30);
-                    DepthImagePoint oElbowRight = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[1], DepthImageFormat.Resolution640x480Fps30);
+                    DepthImagePoint oShoulderLeft = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[0], DepthImageFormat.Resolution640x480Fps30);
+                    DepthImagePoint oShoulderRight = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[1], DepthImageFormat.Resolution640x480Fps30);
 
-                    distance = Math.Sqrt(Math.Pow(oElbowLeft.Y - oElbowRight.Y, 2) + Math.Pow(oElbowLeft.X - oElbowRight.X, 2))/2;
-                    rotation = (float)Math.Atan((double)(oElbowLeft.Y - oElbowRight.Y) / (double)(oElbowLeft.X - oElbowRight.X));
+                    distance = Math.Sqrt(Math.Pow(oShoulderLeft.Y - oShoulderRight.Y, 2) + Math.Pow(oShoulderLeft.X - oShoulderRight.X, 2))/2;
+                    distance = Math.Max(minDistance, distance);
+                    rotation = (float)Math.Atan((double)(oShoulderLeft.Y - oShoulderRight.Y) / (double)(oShoulderLeft.X - oShoulderRight.X));
 
-                    DrawRectangle(spriteBatch, oElbowLeft.X, oElbowLeft.Y, distance * 2, distance * 2, rotation, currentColor);
+                    DrawRectangle(spriteBatch, oShoulderLeft.X , oShoulderLeft.Y - distance / 2, distance * 2, distance * 2, rotation, currentColor);
                     break;
                 case PoseType.L:
                     DepthImagePoint lWristLeft = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[0], DepthImageFormat.Resolution640x480Fps30);
@@ -191,6 +193,7 @@ namespace BlockGame
                     DepthImagePoint lSpine = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[2], DepthImageFormat.Resolution640x480Fps30);
 
                     distance = Math.Sqrt(Math.Pow(lWristLeft.Y - lShoulderCenter.Y, 2) + Math.Pow(lWristLeft.X - lShoulderCenter.X, 2)) / 2;
+                    distance = Math.Max(minDistance, distance);
                     rotation = (float)-Math.Atan((double)(lShoulderCenter.X - lSpine.X) / (double)(lShoulderCenter.Y - lSpine.Y));
 
                     DrawRectangle(spriteBatch, lShoulderCenter.X - distance / 2, lShoulderCenter.Y - distance / 2, distance, distance * 3, rotation, currentColor);
@@ -202,6 +205,7 @@ namespace BlockGame
                     DepthImagePoint jSpine = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[2], DepthImageFormat.Resolution640x480Fps30);
 
                     distance = Math.Sqrt(Math.Pow(jWristRight.Y - jShoulderCenter.Y, 2) + Math.Pow(jWristRight.X - jShoulderCenter.X, 2)) / 2;
+                    distance = Math.Max(minDistance, distance);
                     rotation = (float)-Math.Atan((double)(jShoulderCenter.X - jSpine.X) / (double)(jShoulderCenter.Y - jSpine.Y));
                     
                     DrawRectangle(spriteBatch, jShoulderCenter.X + distance / 2, jShoulderCenter.Y - distance / 2, distance, distance, rotation, currentColor);
@@ -212,6 +216,7 @@ namespace BlockGame
                     DepthImagePoint tWristRight = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[1], DepthImageFormat.Resolution640x480Fps30);
 
                     distance = Math.Sqrt(Math.Pow(tWristLeft.Y - tWristRight.Y, 2) + Math.Pow(tWristLeft.X - tWristRight.X, 2)) / 5;
+                    distance = Math.Max(minDistance, distance);
                     rotation = (float)Math.Atan((double)(tWristLeft.Y - tWristRight.Y) / (double)(tWristLeft.X - tWristRight.X));
 
                     DrawRectangle(spriteBatch, tWristLeft.X + 2 * distance, tWristLeft.Y + distance / 2, distance, distance, rotation, currentColor);
@@ -225,28 +230,31 @@ namespace BlockGame
                     DepthImagePoint iWrists = new DepthImagePoint();
                     iWrists.X = (iWristLeft.X + iWristRight.X) / 2;
                     iWrists.Y = (iWristLeft.Y + iWristRight.Y) / 2;
-                    distance = Math.Sqrt(Math.Pow(iWrists.Y - iSpine.Y, 2) + Math.Pow(iWrists.X - iSpine.X, 2)) / 3;
+                    distance = Math.Sqrt(Math.Pow(iWrists.Y - iSpine.Y, 2) + Math.Pow(iWrists.X - iSpine.X, 2)) / 4;
+                    distance = Math.Max(minDistance, distance);
                     rotation = (float)-Math.Atan((double)(iWrists.X - iSpine.X) / (double)(iWrists.Y - iSpine.Y));
 
                     DrawRectangle(spriteBatch, iWrists.X - distance / 2, iWrists.Y, distance, distance * 4, rotation, currentColor);
                     break;
                 case PoseType.S:
                     DepthImagePoint sWristLeft = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[0], DepthImageFormat.Resolution640x480Fps30);
-                    DepthImagePoint sWristRight = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[1], DepthImageFormat.Resolution640x480Fps30);
-                    distance = Math.Abs(sWristLeft.X - sWristRight.X) / 4;
+                    DepthImagePoint sShoulderCenter = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[1], DepthImageFormat.Resolution640x480Fps30);
+                    distance = Math.Abs(sWristLeft.X - sShoulderCenter.X) / 2;
+                    distance = Math.Max(minDistance, distance);
                     //rotation = (float)-Math.Atan((double)(sWrists.X - sSpine.X) / (double)(iWrists.Y - iSpine.Y));
 
-                    DrawRectangle(spriteBatch, sWristLeft.X + distance, sWristLeft.Y, distance, distance * 2, 0, currentColor);
-                    DrawRectangle(spriteBatch, sWristLeft.X + 2 * distance, sWristLeft.Y + distance, distance, distance * 2, 0, currentColor);
+                    DrawRectangle(spriteBatch, sWristLeft.X + distance / 2, sWristLeft.Y + distance / 2, distance, distance * 2, 0, currentColor);
+                    DrawRectangle(spriteBatch, sWristLeft.X - distance / 2, sWristLeft.Y - distance / 2, distance, distance * 2, 0, currentColor);
                     break;
                 case PoseType.Z:
-                    DepthImagePoint zWristLeft = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[0], DepthImageFormat.Resolution640x480Fps30);
-                    DepthImagePoint zWristRight = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[1], DepthImageFormat.Resolution640x480Fps30);
-                    distance = Math.Abs(zWristLeft.X - zWristRight.X) / 4;
-                    //rotation = (float)-Math.Atan((double)(zWrists.X - iSpine.X) / (double)(iWrists.Y - iSpine.Y));
+                    DepthImagePoint zWristRight = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[0], DepthImageFormat.Resolution640x480Fps30);
+                    DepthImagePoint zShoulderCenter = coordinateMapper.MapSkeletonPointToDepthPoint(currentPoseStatus.pointsOfInterest[1], DepthImageFormat.Resolution640x480Fps30);
+                    distance = Math.Abs(zShoulderCenter.X - zWristRight.X) / 2;
+                    distance = Math.Max(minDistance, distance);
+                    //rotation = (float)Math.Atan((double)(zWristRight.X - zShoulderCenter.X) / (double)(zWristRight.Y - zShoulderCenter.Y));
 
-                    DrawRectangle(spriteBatch, zWristLeft.X + distance, zWristRight.Y + distance, distance, distance * 2, 0, currentColor);
-                    DrawRectangle(spriteBatch, zWristLeft.X + 2 * distance, zWristRight.Y, distance, distance * 2, 0, currentColor);
+                    DrawRectangle(spriteBatch, zWristRight.X - distance * 3 / 2, zWristRight.Y + distance / 2, distance, distance * 2, 0, currentColor);
+                    DrawRectangle(spriteBatch, zWristRight.X - distance / 2, zWristRight.Y - distance / 2, distance, distance * 2, 0, currentColor);
                     break;
                 case PoseType.NO_POSE:
                 default:

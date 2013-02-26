@@ -69,12 +69,6 @@ namespace BlockGame
             }
             humanPosition[0].Y = 0;
             humanPosition[0].X = width / 2;
-            humanPosition[1].Y = 0;
-            humanPosition[1].X = width / 2-1;
-            humanPosition[2].Y = 0;
-            humanPosition[2].X = width / 2-2;
-            humanPosition[3].Y = 1;
-            humanPosition[3].X = width / 2-2;
             _pivotPoint = new Vector2(humanPosition[0].X, humanPosition[0].Y);
             locked = false;
         }
@@ -177,12 +171,13 @@ namespace BlockGame
             switch(move)
             {
                 case PlayerMove.GO_DOWN:
+                    MoveHumanBlockDownwards();
                     break;
                 case PlayerMove.GO_LEFT:
-                    MoveHumanBlock(-1);
+                    MoveHumanBlockSideways(-1);
                     break;
                 case PlayerMove.GO_RIGHT:
-                    MoveHumanBlock(1);
+                    MoveHumanBlockSideways(1);
                     break;
                 case PlayerMove.ROTATE_LEFT:
                     if(pivotPoint.X > 0 && pivotPoint.X < width-1 && pivotPoint.Y < height-1 
@@ -200,7 +195,7 @@ namespace BlockGame
             }
         }
 
-        private void MoveHumanBlock(int direction)
+        private void MoveHumanBlockSideways(int direction)
         {
             Point[] tempMove = { humanPosition[0], humanPosition[1], humanPosition[2], humanPosition[3]};
             bool collision = false;
@@ -220,6 +215,16 @@ namespace BlockGame
             {
                 humanPosition = tempMove;
                 _pivotPoint.X += direction;
+            }
+        }
+
+        private void MoveHumanBlockDownwards()
+        {
+            while (!Collision())
+            {
+                _pivotPoint.Y = _pivotPoint.Y + 1;
+                for (int i = 0; i < humanPosition.Length; i++)
+                    humanPosition[i].Y += 1;
             }
         }
 
@@ -245,7 +250,9 @@ namespace BlockGame
 
                 tempRotation[i].X = (int)Math.Truncate(rotatedCoordinate.X);
                 tempRotation[i].Y = (int)Math.Truncate(rotatedCoordinate.Y);
-                if (tempRotation[i].X < 0 || tempRotation[i].X >= width || field[tempRotation[i].X, tempRotation[i].Y] == 1)
+                //Check to see if the rotation was possible
+                if (tempRotation[i].X < 0 || tempRotation[i].X >= width || tempRotation[i].Y < 0 || tempRotation[i].Y >= height
+                    || field[tempRotation[i].X, tempRotation[i].Y] == 1)
                 {
                     collision = true;
                     break;
@@ -255,7 +262,6 @@ namespace BlockGame
             if (!collision)
             {
                 humanPosition = tempRotation;
-                _pivotPoint.X += direction;
             }
         }
 
@@ -264,7 +270,7 @@ namespace BlockGame
         {
             if (gameOver)
             {
-                return false;
+                return true;
             }
                 
             bool hasResetHumanPosition = false;

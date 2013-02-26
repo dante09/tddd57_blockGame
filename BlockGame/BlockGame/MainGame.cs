@@ -32,6 +32,7 @@ namespace BlockGame
         private PoseType lastPose = PoseType.NO_POSE;
         private int poseKeptTime = 0;
         private bool blockLockedIn = false;
+        private bool showSplashScreen = true;
         //Time before a block moves down one step in ms
         private const int tickTime = 500;
         private int timeSinceLastTick = 0;
@@ -59,7 +60,7 @@ namespace BlockGame
             gameField = new GameField();
             placingRenderer = new BlockPlacingRenderer(this, gameField);
 
-            blockCreator = new BlockCreationHumanPlayer();
+            blockCreator = new BlockCreationComputerPlayer();
             creationRenderer = new BlockCreationRenderer(this, blockCreator.shapeSelectionList);
 
         }
@@ -74,8 +75,6 @@ namespace BlockGame
         {
             colorGenerator = new Random();
             blockPlacer = new BlockPlacerHumanPlayer();
-            Components.Add(placingRenderer);
-            Components.Add(creationRenderer);
             Components.Add(skeletonManager);
             Services.AddService(typeof(SkeletonStreamManager), skeletonManager);
             creationRenderer.currentColor = RandomColor();
@@ -99,6 +98,11 @@ namespace BlockGame
             // TODO: Unload any non ContentManager content here
         }
 
+        private void newGame()
+        {
+            //showingSplashScreen = true;
+        }
+
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -107,55 +111,83 @@ namespace BlockGame
         protected override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-            if (skeletonManager.creatorPlayer != null && !blockLockedIn)
+            //Main tetris game loop
+            if (!showSplashScreen)
             {
-                PoseStatus currentStatus = blockCreator.GetBlock(skeletonManager.creatorPlayer);
-                if (lastPose != PoseType.NO_POSE && currentStatus.closestPose == lastPose)
-                {
-                    poseKeptTime += gameTime.ElapsedGameTime.Milliseconds;
-                }
-                else if (poseKeptTime > 500)
-                {
-                    creationRenderer.currentColor = RandomColor();
-                    poseKeptTime = 0;
-                }
-                else
-                {
-                    poseKeptTime = 0;
-                }
-                creationRenderer.poseKeptTime = poseKeptTime;
-                creationRenderer.currentPoseStatus = currentStatus;
-                lastPose = currentStatus.closestPose;
+                Skeleton creatorPlayer = skeletonManager.creatorPlayer;
+                Skeleton placerPlayer = skeletonManager.placerPlayer;
+                if (!blockCreator.isHuman)
+                    creatorPlayer = placerPlayer;
 
-                //If a pose has been kept for a certain amount of time 
-                if (poseKeptTime >= 2000)
+                if (creatorPlayer != null && !blockLockedIn)
                 {
-                    blockLockedIn = true;
-                    blockCreator.RemoveShape(currentStatus.closestPose);
-                    gameField.LockShape(currentStatus.closestPose, creationRenderer.currentColor);
+                    PoseStatus currentStatus = blockCreator.GetBlock(creatorPlayer);
+                    if (lastPose != PoseType.NO_POSE && currentStatus.closestPose == lastPose)
+                    {
+                        poseKeptTime += gameTime.ElapsedGameTime.Milliseconds;
+                    }
+                    else if (poseKeptTime > 500)
+                    {
+                        creationRenderer.currentColor = RandomColor();
+                        poseKeptTime = 0;
+                    }
+                    else
+                    {
+                        poseKeptTime = 0;
+                    }
+                    creationRenderer.poseKeptTime = poseKeptTime;
+                    creationRenderer.currentPoseStatus = currentStatus;
+                    lastPose = currentStatus.closestPose;
+
+                    //If a pose has been kept for a certain amount of time 
+                    if (poseKeptTime >= 2000)
+                    {
+                        blockLockedIn = true;
+                        blockCreator.RemoveShape(currentStatus.closestPose);
+                        gameField.LockShape(currentStatus.closestPose, creationRenderer.currentColor);
+                    }
+                }
+
+                if (placerPlayer != null)
+                {
+                    timeSinceLastTick += gameTime.ElapsedGameTime.Milliseconds;
+                    PlayerMove move = blockPlacer.PlaceBlock(placerPlayer);
+
+                    gameField.MakeMove(move);
+                    if (timeSinceLastTick >= tickTime)
+                    {
+                        if (gameField.MoveTimeStep())
+                        {
+                            //When releasing a locked block, generate a new color.
+                            if (blockLockedIn)
+                                creationRenderer.currentColor = RandomColor();
+                            blockLockedIn = false;
+                        }
+                        timeSinceLastTick = 0;
+                    }
+                    placingRenderer.animationFactor = (double)timeSinceLastTick / (double)tickTime;
                 }
             }
-
-            if (skeletonManager.placerPlayer != null)
+            //Update players chosen from gamemode
+            else
             {
-                timeSinceLastTick += gameTime.ElapsedGameTime.Milliseconds;
-                PlayerMove move = blockPlacer.PlaceBlock(skeletonManager.placerPlayer);
-              
-                gameField.MakeMove(move);
-                if (timeSinceLastTick >= tickTime)
-                {
-                    if (gameField.MoveTimeStep())
-                    {
-                        //When releasing a locked block, generate a new color.
-                        if(blockLockedIn)
-                            creationRenderer.currentColor = RandomColor();
-                        blockLockedIn = false;
-                    }
-                    timeSinceLastTick = 0;
-                }
-                placingRenderer.animationFactor = (double)timeSinceLastTick / (double)tickTime;
+                ChooseGameMode();
             }
             base.Update(gameTime);
+        }
+
+        private void ChooseGameMode()
+        {
+            if (skeletonManager.placerPlayer != null)
+            {
+                if (skeletonManager.placerPlayer.Joints[JointType.WristLeft].Position.Y
+                    > skeletonManager.placerPlayer.Joints[JointType.ShoulderCenter].Position.Y)
+                {
+                    Components.Add(placingRenderer);
+                    Components.Add(creationRenderer);
+                    showSplashScreen = false;
+                }
+            }
         }
 
         //Color generation for blocks
@@ -175,7 +207,10 @@ namespace BlockGame
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.White);
+            if (showSplashScreen &&chooser.Sensor !=null)
+            {
+                GraphicsDevice.Clear(Color.White);
+            }
             base.Draw(gameTime);
         }
 

@@ -32,10 +32,12 @@ namespace BlockGame
             SHOULDER_CENTER_Y = 6,
             [Description("head y position")]
             HEAD_Y = 7,
+            [Description("head x position")]
+            HEAD_X = 8,
             [Description("left wrist x position")]
-            LEFT_WRIST_X = 8,
+            LEFT_WRIST_X = 9,
             [Description("right wrist x position")]
-            RIGHT_WRIST_X = 9
+            RIGHT_WRIST_X = 10
         }
 
         public PoseType poseType
@@ -96,9 +98,9 @@ namespace BlockGame
         {
             double[] values = { features[(int)Features.LEFT_ELBOW_ANGLE], 
                                   features[(int)Features.RIGHT_ELBOW_ANGLE], 
-                                  features[(int)Features.LEFT_ARM_ANGLE], 
-                                  features[(int)Features.RIGHT_ARM_ANGLE] };
-            double[] expectedValues = { 1.75, 1.75, 1.35, 1.35 };
+                              /*    features[(int)Features.LEFT_ARM_ANGLE], 
+                                  features[(int)Features.RIGHT_ARM_ANGLE] */};
+            double[] expectedValues = { 1.75, 1.75/*, 1.35, 1.35 */};
 
             double[] handOverShoulderValues = { features[(int)Features.LEFT_WRIST_Y], 
                                                 features[(int)Features.RIGHT_WRIST_Y], 
@@ -191,7 +193,8 @@ namespace BlockGame
         {
             double[] values = { features[(int)Features.LEFT_WRIST_Y], 
                                   features[(int)Features.RIGHT_WRIST_Y], 
-                                  features[(int)Features.HEAD_Y], 
+                                  features[(int)Features.HEAD_Y],
+                                  features[(int)Features.HEAD_X],
                                   features[(int)Features.LEFT_WRIST_X], 
                                   features[(int)Features.RIGHT_WRIST_X]};
 
@@ -199,9 +202,11 @@ namespace BlockGame
             bool handsOverHead = values[0] > values[2] &&
                  values[1] > values[2];
 
-            double handDistance = Math.Sqrt(Math.Pow(values[0] - values[1], 2) + Math.Pow(values[3] - values[4], 2));
+            double betweenHandsX = (values[4] + values[5]) / 2;
+            double betweenHandsY = (values[0] - values[1]) / 2;
+            double distanceHeadHands = Math.Sqrt(Math.Pow(values[2] - betweenHandsY, 2) + Math.Pow(values[3]-betweenHandsX, 2));
 
-            return (handsOverHead ? 1 - handDistance : 0);
+            return (handsOverHead && distanceHeadHands > 0.25 ? 1 : 0);
         }
     }
 
@@ -217,14 +222,13 @@ namespace BlockGame
             double[] values = { features[(int)Features.LEFT_WRIST_Y], 
                                   features[(int)Features.RIGHT_WRIST_Y],
                                   features[(int)Features.SHOULDER_CENTER_Y],
-                                  features[(int)Features.LEFT_ELBOW_ANGLE], 
-                                  features[(int)Features.RIGHT_ELBOW_ANGLE]};
+                                  features[(int)Features.LEFT_ELBOW_ANGLE]};
 
             bool handsOverAndUnderShoulders = values[0] > values[2] &&
-    values[1] < values[2];
+                    values[1] < values[2];
 
-            double[] elbowValues = { values[3], values[4] };
-            double[] expectedElbowValues = { 1.7, 1.7 };
+            double[] elbowValues = { values[3] };
+            double[] expectedElbowValues = { 1.75 };
 
             return (handsOverAndUnderShoulders ? Normalize(elbowValues, expectedElbowValues) : 0);
         }
@@ -242,14 +246,13 @@ namespace BlockGame
             double[] values = { features[(int)Features.LEFT_WRIST_Y], 
                                   features[(int)Features.RIGHT_WRIST_Y],
                                   features[(int)Features.SHOULDER_CENTER_Y],
-                                  features[(int)Features.LEFT_ELBOW_ANGLE], 
                                   features[(int)Features.RIGHT_ELBOW_ANGLE]};
 
             bool handsOverAndUnderShoulders = values[0] < values[2] &&
-    values[1] > values[2];
+                    values[1] > values[2];
 
-            double[] elbowValues = { values[3], values[4] };
-            double[] expectedElbowValues = { 1.7, 1.7 };
+            double[] elbowValues = { values[3] };
+            double[] expectedElbowValues = { 1.75 };
 
             return (handsOverAndUnderShoulders ? Normalize(elbowValues, expectedElbowValues) : 0);
         }

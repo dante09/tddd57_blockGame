@@ -49,6 +49,12 @@ namespace BlockGame
                     referencePosLeft.Clear();
                     return PlayerMove.ROTATE_LEFT;
                 }
+                if (leftHand.Y < leftRef.Y - 0.4 && rightHand.Y < rightRef.Y - 0.4)
+                {
+                    referencePosRight.Clear();
+                    referencePosLeft.Clear();
+                    return PlayerMove.GO_DOWN;
+                }
             }
             return PlayerMove.NO_MOVE;
         }
