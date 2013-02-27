@@ -33,9 +33,11 @@ namespace BlockGame
         private int poseKeptTime = 0;
         private bool blockLockedIn = false;
         private bool showSplashScreen = true;
-        //Time before a block moves down one step in ms
+        private int nbrPlayers = 0;
+        //Timers
         private const int tickTime = 1000;
         private int timeSinceLastTick = 0;
+        private int playerCheckInTime = 0;
         //Splash screen
         private Texture2D splashScreen;
 
@@ -97,6 +99,7 @@ namespace BlockGame
         private void newGame(BlockCreationPlayer blockCreationPlayer, BlockPlacerPlayer blockPlacerPlayer)
         {
             gameField.Clear();
+            nbrPlayers = 0;
             placingRenderer = new BlockPlacingRenderer(this, gameField);
 
             blockCreator = blockCreationPlayer;
@@ -185,25 +188,40 @@ namespace BlockGame
             //Update players chosen from gamemode
             else
             {
-                ChooseGameMode();
+                ChooseNbrOfPlayers();
             }
             base.Update(gameTime);
         }
 
-        private void ChooseGameMode()
+        private void ChooseNbrOfPlayers()
         {
-            if (skeletonManager.placerPlayer != null)
+            Skeleton creatorPlayer = skeletonManager.creatorPlayer;
+            Skeleton placerPlayer = skeletonManager.placerPlayer;
+            int nbrPlayers = 0;
+
+            if (placerPlayer != null && placerPlayer.Joints[JointType.WristLeft].Position.Y
+                    > placerPlayer.Joints[JointType.ShoulderCenter].Position.Y)
+                    nbrPlayers++;
+            if (creatorPlayer != null && creatorPlayer.Joints[JointType.WristLeft].Position.Y
+                    > creatorPlayer.Joints[JointType.ShoulderCenter].Position.Y)
+                nbrPlayers++;
+
+            if (this.nbrPlayers == nbrPlayers)
+                playerCheckInTime++;
+            else
+                playerCheckInTime = 0;
+
+            this.nbrPlayers = nbrPlayers;
+            if (playerCheckInTime >= 100)
             {
-                if (skeletonManager.placerPlayer.Joints[JointType.WristLeft].Position.Y
-                    > skeletonManager.placerPlayer.Joints[JointType.ShoulderCenter].Position.Y)
-                {
-                    //TODO: players should be created here
-                    newGame(new BlockCreationComputerPlayer(),new BlockPlacerHumanPlayer());
-                    Components.Add(placingRenderer);
-                    Components.Add(creationRenderer);
-                    showSplashScreen = false;
-                }
-            }
+                if(nbrPlayers==2)
+                    newGame(new BlockCreationHumanPlayer(), new BlockPlacerHumanPlayer());
+                else
+                    newGame(new BlockCreationComputerPlayer(), new BlockPlacerHumanPlayer());
+                Components.Add(placingRenderer);
+                Components.Add(creationRenderer);
+                showSplashScreen = false;
+            }          
         }
 
         //Color generation for blocks
