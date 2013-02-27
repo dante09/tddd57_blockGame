@@ -123,6 +123,9 @@ namespace BlockGame
         /// <param name="gameTime">The elapsed game time.</param>
         public override void Draw(GameTime gameTime)
         {
+            if (((KinectChooser)this.Game.Services.GetService(typeof(KinectChooser))).Sensor == null)
+                return;
+
             SpriteBatch spriteBatch = (SpriteBatch)Game.Services.GetService(typeof(SpriteBatch));
             // If we don't have the effect load, load it
             if (null == this.kinectColorVisualizer)

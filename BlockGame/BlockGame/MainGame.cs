@@ -36,6 +36,8 @@ namespace BlockGame
         //Time before a block moves down one step in ms
         private const int tickTime = 1000;
         private int timeSinceLastTick = 0;
+        //Splash screen
+        private Texture2D splashScreen;
 
         private int width = 1000;
 
@@ -56,13 +58,7 @@ namespace BlockGame
             Services.AddService(typeof(KinectChooser), this.chooser);
 
             skeletonManager = new SkeletonStreamManager(this);
-
             gameField = new GameField();
-            placingRenderer = new BlockPlacingRenderer(this, gameField);
-
-            blockCreator = new BlockCreationComputerPlayer();
-            creationRenderer = new BlockCreationRenderer(this, blockCreator.shapeSelectionList);
-
         }
 
         /// <summary>
@@ -74,10 +70,9 @@ namespace BlockGame
         protected override void Initialize()
         {
             colorGenerator = new Random();
-            blockPlacer = new BlockPlacerHumanPlayer();
+            
             Components.Add(skeletonManager);
             Services.AddService(typeof(SkeletonStreamManager), skeletonManager);
-            creationRenderer.currentColor = RandomColor();
             base.Initialize();
         }
 
@@ -85,6 +80,7 @@ namespace BlockGame
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
             Services.AddService(typeof(SpriteBatch), spriteBatch);
+            splashScreen = Content.Load<Texture2D>("tetris");
 
             base.LoadContent();
         }
@@ -98,9 +94,15 @@ namespace BlockGame
             // TODO: Unload any non ContentManager content here
         }
 
-        private void newGame()
+        private void newGame(BlockCreationPlayer blockCreationPlayer, BlockPlacerPlayer blockPlacerPlayer)
         {
-            //showingSplashScreen = true;
+            gameField.Clear();
+            placingRenderer = new BlockPlacingRenderer(this, gameField);
+
+            blockCreator = blockCreationPlayer;
+            creationRenderer = new BlockCreationRenderer(this, blockCreator.shapeSelectionList);
+            blockPlacer = blockPlacerPlayer;
+            creationRenderer.currentColor = RandomColor();
         }
 
         /// <summary>
@@ -110,8 +112,10 @@ namespace BlockGame
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            gameField.gameSpeed = 1 + 0.1 * gameTime.TotalGameTime.Minutes;
             base.Update(gameTime);
+            if (chooser.Sensor == null)
+                return;
+
             //Main tetris game loop
             if (!showSplashScreen)
             {
@@ -151,6 +155,7 @@ namespace BlockGame
 
                 if (placerPlayer != null)
                 {
+                    gameField.gameSpeed = 1 + 0.1 * gameTime.TotalGameTime.Minutes;
                     timeSinceLastTick += gameTime.ElapsedGameTime.Milliseconds;
                     PlayerMove move = blockPlacer.PlaceBlock(placerPlayer);
 
@@ -171,7 +176,10 @@ namespace BlockGame
 
                 if (gameField.gameOver)
                 {
-                    //TODO: Fix game over logic
+                    //TODO: Fix game over logic AND test
+                    showSplashScreen = true;
+                    Components.Remove(placingRenderer);
+                    Components.Remove(creationRenderer);
                 }
             }
             //Update players chosen from gamemode
@@ -190,6 +198,7 @@ namespace BlockGame
                     > skeletonManager.placerPlayer.Joints[JointType.ShoulderCenter].Position.Y)
                 {
                     //TODO: players should be created here
+                    newGame(new BlockCreationComputerPlayer(),new BlockPlacerHumanPlayer());
                     Components.Add(placingRenderer);
                     Components.Add(creationRenderer);
                     showSplashScreen = false;
@@ -217,6 +226,10 @@ namespace BlockGame
             if (showSplashScreen &&chooser.Sensor !=null)
             {
                 GraphicsDevice.Clear(Color.White);
+                spriteBatch.Begin();
+                spriteBatch.Draw(splashScreen,new Rectangle(0,0,GraphicsDevice.Viewport.Width,GraphicsDevice.Viewport.Height)
+                    ,Color.White);
+                spriteBatch.End();
             }
             base.Draw(gameTime);
         }

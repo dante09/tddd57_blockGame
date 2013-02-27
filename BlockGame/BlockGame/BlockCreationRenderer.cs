@@ -123,7 +123,10 @@ namespace BlockGame
 
         public override void Draw(GameTime gameTime)
         {
+            if (((KinectChooser)this.Game.Services.GetService(typeof(KinectChooser))).Sensor == null)
+                return;
             SpriteBatch spriteBatch = (SpriteBatch)Game.Services.GetService(typeof(SpriteBatch));
+
             if (this.depthTexture == null)
             {
                 return;
