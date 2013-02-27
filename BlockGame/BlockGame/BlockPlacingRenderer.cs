@@ -177,6 +177,7 @@ namespace BlockGame
 
         private void DrawGameField(SpriteBatch spriteBatch)
         {
+            //TODO: MOVE THIS CODE
             //Bad code, but it solves the centering problem.
             renderDimensions.X = GraphicsDevice.Viewport.Width/2;
             renderDimensions.Y = GraphicsDevice.Viewport.Height;

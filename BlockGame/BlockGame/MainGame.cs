@@ -206,15 +206,17 @@ namespace BlockGame
                     > creatorPlayer.Joints[JointType.ShoulderCenter].Position.Y)
                 nbrPlayers++;
 
-            if (this.nbrPlayers == nbrPlayers)
+            if (nbrPlayers!=0 && this.nbrPlayers == nbrPlayers)
                 playerCheckInTime++;
             else
                 playerCheckInTime = 0;
 
             this.nbrPlayers = nbrPlayers;
+            //Change to reasonable time
             if (playerCheckInTime >= 100)
             {
-                if(nbrPlayers==2)
+                //Just for testing
+                if(nbrPlayers==3)
                     newGame(new BlockCreationHumanPlayer(), new BlockPlacerHumanPlayer());
                 else
                     newGame(new BlockCreationComputerPlayer(), new BlockPlacerHumanPlayer());

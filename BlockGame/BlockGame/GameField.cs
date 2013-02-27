@@ -84,7 +84,6 @@ namespace BlockGame
             {
                 if (humanPosition[i].X < 0 || humanPosition[i].Y < 0)
                     continue;
-                System.Diagnostics.Debug.WriteLine(humanPosition[i].Y + " " + humanPosition[i].X);
                 if (humanPosition[i].Y == height - 1 ||humanPosition[i].Y+1>=height
                     || field[humanPosition[i].X, humanPosition[i].Y + 1] == 1)
                     return true;
