@@ -45,8 +45,6 @@ namespace BlockGame
             fieldColor = new Color[width, height];
             humanPosition = new Point[4];
             lastPlacedBlock = new Point[4];
-            score = 0;
-            gameSpeed = 1;
             Clear();
         }
 
@@ -60,6 +58,8 @@ namespace BlockGame
                     fieldColor[x, y] = Color.Black;
                 }
             }
+            score = 0;
+            gameSpeed = 1;
             gameOver = false;
             ResetHumanPosition();
         }
@@ -67,6 +67,7 @@ namespace BlockGame
         private void ResetHumanPosition()
         {
             humanColor = Color.Red;
+            humanColor.A = (byte) 100;
             lastPlacedBlock = humanPosition;
             for (int i = 0; i < humanPosition.Length; i++)
             {
@@ -98,69 +99,64 @@ namespace BlockGame
                 humanColor = color;
                 System.Diagnostics.Debug.WriteLine("LockShape "+pose);
                 //Shape might be needed to be moved if at the corner
-                int x1,x2,x = x1 = x2 = humanPosition[0].X;
-                if (x == 0)
-                    x1 += 1;
-                else if (x == width - 1)
-                    x2 -= 1;
                 Point[] shape = new Point[4];
                 switch (pose)
                 {
                     case PoseType.O:
-                        shape[0] = new Point(x1, humanPosition[0].Y);
-                        shape[1] = new Point(x1 - 1, humanPosition[0].Y);
-                        shape[2] = new Point(x1, humanPosition[0].Y - 1);
-                        shape[3] = new Point(x1 - 1, humanPosition[0].Y - 1);
-                        _pivotPoint = new Vector2((float)(x1 - 0.5), (float)(humanPosition[0].Y - 0.5));
-                        humanPosition = findClosestAvailableSpace(shape);
+                        shape[0] = new Point(humanPosition[0].X, humanPosition[0].Y);
+                        shape[1] = new Point(humanPosition[0].X - 1, humanPosition[0].Y);
+                        shape[2] = new Point(humanPosition[0].X, humanPosition[0].Y - 1);
+                        shape[3] = new Point(humanPosition[0].X - 1, humanPosition[0].Y - 1);
+                        _pivotPoint = new Vector2((float)(humanPosition[0].X - 0.5), (float)(humanPosition[0].Y - 0.5));
+                        MoveToClosestAvailablePosition(shape);
                         break;
                     case PoseType.L:
-                        shape[0] = new Point(x1, humanPosition[0].Y+1);
-                        shape[1] = new Point(x1, humanPosition[0].Y);
-                        shape[2] = new Point(x1, humanPosition[0].Y - 1);
-                        shape[3] = new Point(x1 - 1, humanPosition[0].Y - 1);
-                        _pivotPoint = new Vector2(x1, humanPosition[0].Y);
-                        humanPosition = findClosestAvailableSpace(shape);
+                        shape[0] = new Point(humanPosition[0].X, humanPosition[0].Y + 1);
+                        shape[1] = new Point(humanPosition[0].X, humanPosition[0].Y);
+                        shape[2] = new Point(humanPosition[0].X, humanPosition[0].Y - 1);
+                        shape[3] = new Point(humanPosition[0].X - 1, humanPosition[0].Y - 1);
+                        _pivotPoint = new Vector2(humanPosition[0].X, humanPosition[0].Y);
+                        MoveToClosestAvailablePosition(shape);
                         break;
                     case PoseType.J:
-                        shape[0] = new Point(x1, humanPosition[0].Y+1);
-                        shape[1] = new Point(x1, humanPosition[0].Y);
-                        shape[2] = new Point(x1, humanPosition[0].Y - 1);
-                        shape[3] = new Point(x1 + 1, humanPosition[0].Y - 1);
-                        _pivotPoint = new Vector2(x1, humanPosition[0].Y);
-                        humanPosition = findClosestAvailableSpace(shape);
+                        shape[0] = new Point(humanPosition[0].X, humanPosition[0].Y + 1);
+                        shape[1] = new Point(humanPosition[0].X, humanPosition[0].Y);
+                        shape[2] = new Point(humanPosition[0].X, humanPosition[0].Y - 1);
+                        shape[3] = new Point(humanPosition[0].X + 1, humanPosition[0].Y - 1);
+                        _pivotPoint = new Vector2(humanPosition[0].X, humanPosition[0].Y);
+                        MoveToClosestAvailablePosition(shape);
                         break;
                     case PoseType.T:
-                        shape[0] = new Point(x1-1, humanPosition[0].Y);
-                        shape[1] = new Point(x1, humanPosition[0].Y);
-                        shape[2] = new Point(x1 + 1, humanPosition[0].Y);
-                        shape[3] = new Point(x1, humanPosition[0].Y + 1);
-                        _pivotPoint = new Vector2(x1, humanPosition[0].Y);
-                        humanPosition = findClosestAvailableSpace(shape);
+                        shape[0] = new Point(humanPosition[0].X - 1, humanPosition[0].Y);
+                        shape[1] = new Point(humanPosition[0].X, humanPosition[0].Y);
+                        shape[2] = new Point(humanPosition[0].X + 1, humanPosition[0].Y);
+                        shape[3] = new Point(humanPosition[0].X, humanPosition[0].Y + 1);
+                        _pivotPoint = new Vector2(humanPosition[0].X, humanPosition[0].Y);
+                        MoveToClosestAvailablePosition(shape);
                         break;
                     case PoseType.I:
-                        shape[0] = new Point(x1, humanPosition[0].Y - 2);
-                        shape[1] = new Point(x1, humanPosition[0].Y - 1);
-                        shape[2] = new Point(x1, humanPosition[0].Y);
-                        shape[3] = new Point(x1, humanPosition[0].Y + 1);
-                        _pivotPoint = new Vector2((float)(x1 + 0.5), humanPosition[0].Y);
-                        humanPosition = findClosestAvailableSpace(shape);
+                        shape[0] = new Point(humanPosition[0].X, humanPosition[0].Y - 2);
+                        shape[1] = new Point(humanPosition[0].X, humanPosition[0].Y - 1);
+                        shape[2] = new Point(humanPosition[0].X, humanPosition[0].Y);
+                        shape[3] = new Point(humanPosition[0].X, humanPosition[0].Y + 1);
+                        _pivotPoint = new Vector2((float)(humanPosition[0].X + 0.5), humanPosition[0].Y);
+                        MoveToClosestAvailablePosition(shape);
                         break;
                     case PoseType.S:
-                        shape[0] = new Point(x1, humanPosition[0].Y - 1);
-                        shape[1] = new Point(x1, humanPosition[0].Y);
-                        shape[2] = new Point(x1 + 1, humanPosition[0].Y);
-                        shape[3] = new Point(x1 + 1, humanPosition[0].Y + 1);
-                        _pivotPoint = new Vector2(x1 + 1, humanPosition[0].Y);
-                        humanPosition = findClosestAvailableSpace(shape);
+                        shape[0] = new Point(humanPosition[0].X, humanPosition[0].Y - 1);
+                        shape[1] = new Point(humanPosition[0].X, humanPosition[0].Y);
+                        shape[2] = new Point(humanPosition[0].X + 1, humanPosition[0].Y);
+                        shape[3] = new Point(humanPosition[0].X + 1, humanPosition[0].Y + 1);
+                        _pivotPoint = new Vector2(humanPosition[0].X + 1, humanPosition[0].Y);
+                        MoveToClosestAvailablePosition(shape);
                         break;
                     case PoseType.Z:
-                        shape[0] = new Point(x1, humanPosition[0].Y);
-                        shape[1] = new Point(x1, humanPosition[0].Y + 1);
-                        shape[2] = new Point(x1 + 1, humanPosition[0].Y-1);
-                        shape[3] = new Point(x1 + 1, humanPosition[0].Y);
-                        _pivotPoint = new Vector2(x1 + 1, humanPosition[0].Y);
-                        humanPosition = findClosestAvailableSpace(shape);
+                        shape[0] = new Point(humanPosition[0].X, humanPosition[0].Y);
+                        shape[1] = new Point(humanPosition[0].X, humanPosition[0].Y + 1);
+                        shape[2] = new Point(humanPosition[0].X + 1, humanPosition[0].Y - 1);
+                        shape[3] = new Point(humanPosition[0].X + 1, humanPosition[0].Y);
+                        _pivotPoint = new Vector2(humanPosition[0].X + 1, humanPosition[0].Y);
+                        MoveToClosestAvailablePosition(shape);
                         break;
                     case PoseType.NO_POSE:
                     default:
@@ -176,13 +172,13 @@ namespace BlockGame
          * 5 3 4
          * 2 0 1
          */
-        private Point[] findClosestAvailableSpace(Point[] requestedPoints)
+        private void MoveToClosestAvailablePosition(Point[] shape)
         {
             int[] xDisplacement = { 0, 1, -1 };
             bool blocked = false;
-            Point[] testPoints = new Point[requestedPoints.Length];
+            Point[] testPoints = new Point[humanPosition.Length];
             Point displacement = new Point(0, 0);
-            for (int i = 0; i < requestedPoints.Length; i++)
+            for (int i = 0; i < humanPosition.Length; i++)
                 testPoints[i] = new Point();
 
             //Overestimation of the inequality, but we won't get out of this loop a lot anyway.
@@ -192,27 +188,31 @@ namespace BlockGame
                 displacement.Y = -n / 3;
                 blocked = false;
                 //Add displacement to test points.
-                for (int i = 0; i < requestedPoints.Length; i++)
+                for (int i = 0; i < humanPosition.Length; i++)
                 {
-                    testPoints[i].X = requestedPoints[i].X + displacement.X;
-                    testPoints[i].Y = requestedPoints[i].Y + displacement.Y;
+                    testPoints[i].X = shape[i].X + displacement.X;
+                    testPoints[i].Y = shape[i].Y + displacement.Y;
                 }
                 //Check if any of the displaced test points are blocked.
-                for (int i = 0; i < requestedPoints.Length; i++)
-                    if (isOccupied(testPoints[i]))
+                for (int i = 0; i < humanPosition.Length; i++)
+                    if (IsOccupied(testPoints[i]))
                         blocked = true;
                 //If none are blocked, return the current test points.
                 if (!blocked)
-                    return testPoints;
+                {
+                    humanPosition = testPoints;
+                    _pivotPoint.X += displacement.X;
+                    _pivotPoint.Y += displacement.Y;
+                    return;
+                }
             }
             
             //If no valid position was found, let the shape stay as a unit block.
             System.Diagnostics.Debug.WriteLine("Found no suitable position for block at " + humanPosition[0] + ".");
-            return humanPosition;
         }
 
         //Returns true if the point is occupied or outside of the game field.
-        private bool isOccupied(Point p)
+        private bool IsOccupied(Point p)
         {
             return (p.X < 0 || p.X >= width || p.Y < 0 || p.Y >= height || field[p.X, p.Y] == 1);
         }
@@ -255,7 +255,7 @@ namespace BlockGame
                 if (tempMove[i].X < 0)
                     continue;
                 tempMove[i].X +=direction;
-                if (isOccupied(tempMove[i]))
+                if (IsOccupied(tempMove[i]))
                 {
                     collision = true;
                     break;
@@ -301,8 +301,8 @@ namespace BlockGame
 
                 tempRotation[i].X = (int)Math.Truncate(rotatedCoordinate.X);
                 tempRotation[i].Y = (int)Math.Truncate(rotatedCoordinate.Y);
-
-                if (isOccupied(tempRotation[i]))
+                System.Diagnostics.Debug.WriteLine("X: " + " Y: " + tempRotation[i].Y);
+                if (IsOccupied(tempRotation[i]))
                 {
                     collision = true;
                     break;
@@ -326,16 +326,23 @@ namespace BlockGame
             bool hasResetHumanPosition = false;
             if (Collision())
             {
-                System.Diagnostics.Debug.WriteLine("Coolision! Awww yeah! So cool!");
-                for (int i = 0; i < humanPosition.Length; i++)
+                if (locked)
                 {
-                    if (humanPosition[i].X < 0 || humanPosition[i].Y < 0)
-                        break;
-                    field[humanPosition[i].X, humanPosition[i].Y] = 1;
-                    fieldColor[humanPosition[i].X, humanPosition[i].Y] = humanColor;
+                    System.Diagnostics.Debug.WriteLine("Coolision! Awww yeah! So cool!");
+                    for (int i = 0; i < humanPosition.Length; i++)
+                    {
+                        if (humanPosition[i].X < 0 || humanPosition[i].Y < 0)
+                            break;
+                        field[humanPosition[i].X, humanPosition[i].Y] = 1;
+                        fieldColor[humanPosition[i].X, humanPosition[i].Y] = humanColor;
 
+                    }
+                    RemoveRows();
                 }
-                RemoveRows();
+                else
+                {
+                    CreateTrash();
+                }
                 //Check if game is over
                 for (int i = 0; i < width; i++)
                 {
@@ -348,6 +355,7 @@ namespace BlockGame
                         }
                     }
                 }
+
                 ResetHumanPosition();
                 hasResetHumanPosition = true;
             }
@@ -371,6 +379,32 @@ namespace BlockGame
                 }
             }
             return hasResetHumanPosition;
+        }
+
+        private void CreateTrash()
+        {
+            Random random = new Random();
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    if (y < height - 1)
+                    {
+                        field[x, y] = field[x, y + 1];
+                        fieldColor[x, y] = fieldColor[x, y + 1];
+                    }
+                    else
+                    {
+                        field[x, y] = 0;
+                    }
+                }
+            }
+            for (int i = 0; i < width - 2; i++)
+            {
+                int x = random.Next(0, width);
+                field[x, height-1] = 1;
+                fieldColor[x, height - 1] = Color.Black;
+            }
         }
 
         private void RemoveRow(int row)
@@ -409,7 +443,7 @@ namespace BlockGame
             if (rowsRemoved > 0)
             {
                 int[] lineScore = { 100, 300, 500, 800 };
-                score += (int) (lineScore[rowsRemoved + 1] * gameSpeed);
+                score += (int) (lineScore[rowsRemoved - 1] * gameSpeed);
             }
         }
     }

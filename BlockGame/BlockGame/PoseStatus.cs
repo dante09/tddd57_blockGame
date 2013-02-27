@@ -70,14 +70,16 @@ namespace BlockGame
                     pointsOfInterest[2] = skeleton.Joints[JointType.Spine].Position;
                     break;
                 case PoseType.S:
-                    pointsOfInterest = new SkeletonPoint[2];
+                    pointsOfInterest = new SkeletonPoint[3];
                     pointsOfInterest[0] = skeleton.Joints[JointType.WristLeft].Position;
                     pointsOfInterest[1] = skeleton.Joints[JointType.ShoulderCenter].Position;
+                    pointsOfInterest[2] = skeleton.Joints[JointType.ElbowLeft].Position;
                     break;
                 case PoseType.Z:
-                    pointsOfInterest = new SkeletonPoint[2];
+                    pointsOfInterest = new SkeletonPoint[3];
                     pointsOfInterest[0] = skeleton.Joints[JointType.WristRight].Position;
                     pointsOfInterest[1] = skeleton.Joints[JointType.ShoulderCenter].Position;
+                    pointsOfInterest[2] = skeleton.Joints[JointType.ElbowRight].Position;
                     break;
                 case PoseType.NO_POSE:
                 default:

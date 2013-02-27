@@ -13,7 +13,7 @@ namespace BlockGame
         public List<PoseType> shapeSelectionList { private set; get; }
         protected Random shapeGenerator;
         //The starting and maximum size of the shape selection list.
-        protected const int MAX_LIST_SIZE = 7;
+        protected const int MAX_LIST_SIZE = 5;
         //The minimum size of the shape selection list. When the list shrinks below this size, it will be repopulated.
         //0 < MIN_LIST_SIZE <= MAX_LIST_SIZE
         protected const int MIN_LIST_SIZE = 1;
@@ -23,16 +23,9 @@ namespace BlockGame
             shapeSelectionList = new List<PoseType>();
             shapeGenerator = new Random();
             //Populate the shapeSelectionList
-            //for (int i = 0; i < MAX_LIST_SIZE; i++)
-            //    AddShape();
-
-            shapeSelectionList.Add(PoseType.O);
-            shapeSelectionList.Add(PoseType.L);
-            shapeSelectionList.Add(PoseType.J);
-            shapeSelectionList.Add(PoseType.T);
-            shapeSelectionList.Add(PoseType.I);
+            for (int i = 0; i < MAX_LIST_SIZE-1; i++)
+                AddShape();
             shapeSelectionList.Add(PoseType.S);
-            shapeSelectionList.Add(PoseType.Z);
         }
 
         public abstract PoseStatus GetBlock(Skeleton skel);

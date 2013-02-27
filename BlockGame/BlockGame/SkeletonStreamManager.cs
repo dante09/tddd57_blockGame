@@ -97,7 +97,7 @@ namespace BlockGame
                     creatorPlayer = placerPlayer;
                     placerPlayer = temp;
                 }
-                placerPlayer = creatorPlayer;
+                //placerPlayer = creatorPlayer;
              }
             lastSkeletonUpdate = 0;
         }

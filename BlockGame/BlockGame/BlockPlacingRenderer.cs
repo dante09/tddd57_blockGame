@@ -219,7 +219,7 @@ namespace BlockGame
         {
             spriteBatch.Begin();
             spriteBatch.DrawString(font, "Score: " + gameField.score + "\nSpeed: " + (int)(gameField.gameSpeed * 100) + "%", 
-                new Vector2(renderDimensions.X, 0), Color.White);
+                new Vector2(renderDimensions.X, 0), Color.Azure);
             spriteBatch.End();
         }
 

@@ -38,6 +38,7 @@ namespace BlockGame
         private const int tickTime = 1000;
         private int timeSinceLastTick = 0;
         private int playerCheckInTime = 0;
+        private int elapsedGameTime = 0;
         //Splash screen
         private Texture2D splashScreen;
 
@@ -96,7 +97,7 @@ namespace BlockGame
             // TODO: Unload any non ContentManager content here
         }
 
-        private void newGame(BlockCreationPlayer blockCreationPlayer, BlockPlacerPlayer blockPlacerPlayer)
+        private void NewGame(BlockCreationPlayer blockCreationPlayer, BlockPlacerPlayer blockPlacerPlayer)
         {
             gameField.Clear();
             nbrPlayers = 0;
@@ -106,6 +107,7 @@ namespace BlockGame
             creationRenderer = new BlockCreationRenderer(this, blockCreator.shapeSelectionList);
             blockPlacer = blockPlacerPlayer;
             creationRenderer.currentColor = RandomColor();
+            elapsedGameTime = 0;
         }
 
         /// <summary>
@@ -150,6 +152,7 @@ namespace BlockGame
                     //If a pose has been kept for a certain amount of time 
                     if (poseKeptTime >= 2000)
                     {
+                        poseKeptTime = 0;
                         blockLockedIn = true;
                         blockCreator.RemoveShape(currentStatus.closestPose);
                         gameField.LockShape(currentStatus.closestPose, creationRenderer.currentColor);
@@ -158,7 +161,8 @@ namespace BlockGame
 
                 if (placerPlayer != null)
                 {
-                    gameField.gameSpeed = 1 + 0.1 * gameTime.TotalGameTime.Minutes;
+                    elapsedGameTime += gameTime.ElapsedGameTime.Milliseconds;
+                    gameField.gameSpeed = 1 + 0.1 * (int)(elapsedGameTime/60000);
                     timeSinceLastTick += gameTime.ElapsedGameTime.Milliseconds;
                     PlayerMove move = blockPlacer.PlaceBlock(placerPlayer);
 
@@ -213,13 +217,13 @@ namespace BlockGame
 
             this.nbrPlayers = nbrPlayers;
             //Change to reasonable time
-            if (playerCheckInTime >= 100)
+            if (playerCheckInTime >= 10)
             {
                 //Just for testing
-                if(nbrPlayers==3)
-                    newGame(new BlockCreationHumanPlayer(), new BlockPlacerHumanPlayer());
+                if(nbrPlayers==4)
+                    NewGame(new BlockCreationHumanPlayer(), new BlockPlacerHumanPlayer());
                 else
-                    newGame(new BlockCreationComputerPlayer(), new BlockPlacerHumanPlayer());
+                    NewGame(new BlockCreationHumanPlayer(), new BlockPlacerHumanPlayer());
                 Components.Add(placingRenderer);
                 Components.Add(creationRenderer);
                 showSplashScreen = false;
