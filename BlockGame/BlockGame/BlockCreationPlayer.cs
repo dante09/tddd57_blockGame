@@ -25,7 +25,7 @@ namespace BlockGame
             //Populate the shapeSelectionList
             for (int i = 0; i < MAX_LIST_SIZE-1; i++)
                 AddShape();
-            shapeSelectionList.Add(PoseType.S);
+            shapeSelectionList.Add(PoseType.O);
         }
 
         public abstract PoseStatus GetBlock(Skeleton skel);

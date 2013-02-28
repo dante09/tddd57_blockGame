@@ -139,7 +139,7 @@ namespace BlockGame
                         shape[1] = new Point(humanPosition[0].X, humanPosition[0].Y - 1);
                         shape[2] = new Point(humanPosition[0].X, humanPosition[0].Y);
                         shape[3] = new Point(humanPosition[0].X, humanPosition[0].Y + 1);
-                        _pivotPoint = new Vector2((float)(humanPosition[0].X + 0.5), humanPosition[0].Y);
+                        _pivotPoint = new Vector2((float)(humanPosition[0].X + 0.5), (float)(humanPosition[0].Y - 0.5));
                         MoveToClosestAvailablePosition(shape);
                         break;
                     case PoseType.S:
@@ -292,15 +292,14 @@ namespace BlockGame
                 Vector2 translationCoordinate = new Vector2(humanPosition[i].X - pivotPoint.X, humanPosition[i].Y - pivotPoint.Y);
                 translationCoordinate.Y *= direction;
                 System.Diagnostics.Debug.WriteLine(translationCoordinate.Y + " " + translationCoordinate.X);
-                Vector2 rotatedCoordinate = new Vector2((float)Math.Truncate((double)(-translationCoordinate.Y)),
-                    (float)Math.Truncate((double)translationCoordinate.X));
+                Vector2 rotatedCoordinate = new Vector2(-translationCoordinate.Y, translationCoordinate.X);
 
                 rotatedCoordinate.Y *= direction;
                 rotatedCoordinate.X += pivotPoint.X;
                 rotatedCoordinate.Y += pivotPoint.Y;
 
-                tempRotation[i].X = (int)Math.Truncate(rotatedCoordinate.X);
-                tempRotation[i].Y = (int)Math.Truncate(rotatedCoordinate.Y);
+                tempRotation[i].X = (int)Math.Round(rotatedCoordinate.X, MidpointRounding.AwayFromZero);
+                tempRotation[i].Y = (int)Math.Round(rotatedCoordinate.Y, MidpointRounding.AwayFromZero);
                 System.Diagnostics.Debug.WriteLine("X: " + " Y: " + tempRotation[i].Y);
                 if (IsOccupied(tempRotation[i]))
                 {
