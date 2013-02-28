@@ -122,7 +122,9 @@
     <Compile Include="BlockPlacerPlayer.cs" />
     <Compile Include="BlockPlacingRenderer.cs" />
     <Compile Include="GameField.cs" />
+    <Compile Include="GestureRecognizer.cs" />
     <Compile Include="KinectChooser.cs" />
+    <Compile Include="LeftArmUp.cs" />
     <Compile Include="Object2D.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Pose.cs" />

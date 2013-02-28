@@ -218,7 +218,7 @@ namespace BlockGame
         private void DrawScoreAndSpeed(SpriteBatch spriteBatch)
         {
             spriteBatch.Begin();
-            spriteBatch.DrawString(font, "Score: " + gameField.score + "\nSpeed: " + (int)(gameField.gameSpeed * 100) + "%", 
+            spriteBatch.DrawString(font, "Apelsiner: " + gameField.score + "\nHastighet: " + (int)(gameField.gameSpeed * 100) + "%", 
                 new Vector2(renderDimensions.X, 0), Color.Azure);
             spriteBatch.End();
         }

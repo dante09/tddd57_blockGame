@@ -75,15 +75,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="tetris.jpg">
-      <Name>tetris</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="two_players.png">
-      <Name>two_players</Name>
+    <Compile Include="titleScreen.jpg">
+      <Name>titleScreen</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>

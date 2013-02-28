@@ -38,10 +38,10 @@ namespace BlockGame
         private int timeSinceLastTick = 0;
         private int playerCheckInTime = 0;
         private int elapsedGameTime = 0;
-        private int pauseTime = 0;
+        private double pauseTime = 0;
         //Splash screen and icons
         private Texture2D splashScreen;
-        private Texture2D twoPlayers;
+        private Texture2D texture;
 
         private int width = 1000;
 
@@ -92,8 +92,8 @@ namespace BlockGame
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
             Services.AddService(typeof(SpriteBatch), spriteBatch);
-            splashScreen = Content.Load<Texture2D>("tetris");
-            twoPlayers = Content.Load<Texture2D>("two_players");
+            splashScreen = Content.Load<Texture2D>("titleScreen");
+            texture = Content.Load<Texture2D>("Bone");
 
             base.LoadContent();
         }
@@ -110,7 +110,6 @@ namespace BlockGame
         private void NewGame(BlockCreationPlayer blockCreationPlayer, BlockPlacerPlayer blockPlacerPlayer)
         {
             gameField.Clear();
-            nbrPlayers = 0;
             placingRenderer = new BlockPlacingRenderer(this, gameField);
 
             blockCreator = blockCreationPlayer;
@@ -140,7 +139,7 @@ namespace BlockGame
                     ChooseNbrOfPlayers(gameTime);
                     break;
                 case GameState.SHOWING_INSTRUCTIONS:
-                    Instructions();
+                    Instructions(gameTime);
                     break;
             }
             base.Update(gameTime);
@@ -166,9 +165,9 @@ namespace BlockGame
 
             this.nbrPlayers = nbrPlayers;
             //Change to reasonable time
-            if (playerCheckInTime >= 5000)
+            if (playerCheckInTime >= 2000)
             {
-                //Just for testing
+                playerCheckInTime = 0;
                 if(nbrPlayers==2)
                     NewGame(new BlockCreationHumanPlayer(), new BlockPlacerHumanPlayer());
                 else
@@ -177,11 +176,35 @@ namespace BlockGame
             }          
         }
 
-        private void Instructions()
+        private void Instructions(GameTime gameTime)
         {
+            Skeleton creatorPlayer = skeletonManager.creatorPlayer;
+            Skeleton placerPlayer = skeletonManager.placerPlayer;
+            int nbrPlayers = 0;
+
             Components.Add(placingRenderer);
             Components.Add(creationRenderer);
             gameState = GameState.PLAYING_GAME;
+            /*
+            if (placerPlayer != null && placerPlayer.Joints[JointType.WristRight].Position.Y
+                    > placerPlayer.Joints[JointType.ShoulderCenter].Position.Y)
+                nbrPlayers++;
+            if (creatorPlayer != null && creatorPlayer.Joints[JointType.WristRight].Position.Y
+                    > creatorPlayer.Joints[JointType.ShoulderCenter].Position.Y)
+                nbrPlayers++;
+
+            if (this.nbrPlayers == nbrPlayers)
+                playerCheckInTime += gameTime.ElapsedGameTime.Milliseconds;
+            else
+                playerCheckInTime = 0;
+
+            if (playerCheckInTime >= 2000)
+            {
+                Components.Add(placingRenderer);
+                Components.Add(creationRenderer);
+                gameState = GameState.PLAYING_GAME;
+            } 
+             */
         }
 
         private void TetrisGameLoop(GameTime gameTime)
@@ -251,6 +274,7 @@ namespace BlockGame
             if (gameField.gameOver || pauseTime >= 60)
             {
                 gameState = GameState.SHOWING_SPLASH_SCREEN;
+                nbrPlayers = 0;
                 Components.Remove(placingRenderer);
                 Components.Remove(creationRenderer);
             }
@@ -284,28 +308,26 @@ namespace BlockGame
                     ,Color.White);
                 spriteBatch.End();
 
+                Color fadeIn = Color.LightGreen;
+                fadeIn.A = (byte)(playerCheckInTime * 255 / 2000);
                 if (nbrPlayers == 2)
                 {
-                    Color fadeIn = Color.LightGreen;
-                    fadeIn.A = (byte)(playerCheckInTime * 255 / 5000);
                     spriteBatch.Begin();
-                    spriteBatch.Draw(twoPlayers,new Rectangle(GraphicsDevice.Viewport.Width/2,GraphicsDevice.Viewport.Height/2,
-                        100,100),fadeIn);
+                    spriteBatch.Draw(texture, new Rectangle((int)(GraphicsDevice.Viewport.Width * 0.6288), (int)(GraphicsDevice.Viewport.Height * 0.8905),
+                        (int)(GraphicsDevice.Viewport.Width * 0.1702), 30), fadeIn);
                     spriteBatch.End();
                 }
                 else if(nbrPlayers == 1)
                 {
-                    Color fadeIn = Color.MediumPurple;
-                    fadeIn.A = (byte)(playerCheckInTime * 255 / 5000);
                     spriteBatch.Begin();
-                    spriteBatch.Draw(twoPlayers, new Rectangle(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2,
-                        100, 100), fadeIn);
+                    spriteBatch.Draw(texture, new Rectangle((int)(GraphicsDevice.Viewport.Width * 0.1702), (int)(GraphicsDevice.Viewport.Height * 0.8905),
+                        (int)(GraphicsDevice.Viewport.Width * 0.1702), 30), fadeIn);
                     spriteBatch.End();
                 } 
             }
             else if (gameState == GameState.SHOWING_INSTRUCTIONS)
             {
-
+                
             }
             base.Draw(gameTime);
         }
