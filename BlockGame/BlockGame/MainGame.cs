@@ -32,19 +32,28 @@ namespace BlockGame
         private PoseType lastPose = PoseType.NO_POSE;
         private int poseKeptTime = 0;
         private bool blockLockedIn = false;
-        private bool showSplashScreen = true;
         private int nbrPlayers = 0;
         //Timers
         private const int tickTime = 1000;
         private int timeSinceLastTick = 0;
         private int playerCheckInTime = 0;
         private int elapsedGameTime = 0;
-        //Splash screen
+        private int pauseTime = 0;
+        //Splash screen and icons
         private Texture2D splashScreen;
+        private Texture2D twoPlayers;
 
         private int width = 1000;
 
         private Random colorGenerator;
+
+        private GameState gameState;
+        private enum GameState
+        {
+            SHOWING_SPLASH_SCREEN,
+            PLAYING_GAME,
+            SHOWING_INSTRUCTIONS
+        }
 
         public MainGame()
         {
@@ -73,7 +82,7 @@ namespace BlockGame
         protected override void Initialize()
         {
             colorGenerator = new Random();
-            
+            gameState = GameState.SHOWING_SPLASH_SCREEN;
             Components.Add(skeletonManager);
             Services.AddService(typeof(SkeletonStreamManager), skeletonManager);
             base.Initialize();
@@ -84,6 +93,7 @@ namespace BlockGame
             spriteBatch = new SpriteBatch(GraphicsDevice);
             Services.AddService(typeof(SpriteBatch), spriteBatch);
             splashScreen = Content.Load<Texture2D>("tetris");
+            twoPlayers = Content.Load<Texture2D>("two_players");
 
             base.LoadContent();
         }
@@ -108,6 +118,7 @@ namespace BlockGame
             blockPlacer = blockPlacerPlayer;
             creationRenderer.currentColor = RandomColor();
             elapsedGameTime = 0;
+            gameState = GameState.PLAYING_GAME;
         }
 
         /// <summary>
@@ -120,84 +131,22 @@ namespace BlockGame
             base.Update(gameTime);
             if (chooser.Sensor == null)
                 return;
-
-            //Main tetris game loop
-            if (!showSplashScreen)
+            switch (gameState)
             {
-                Skeleton creatorPlayer = skeletonManager.creatorPlayer;
-                Skeleton placerPlayer = skeletonManager.placerPlayer;
-                if (!blockCreator.isHuman)
-                    creatorPlayer = placerPlayer;
-
-                if (creatorPlayer != null && !blockLockedIn)
-                {
-                    PoseStatus currentStatus = blockCreator.GetBlock(creatorPlayer);
-                    if (lastPose != PoseType.NO_POSE && currentStatus.closestPose == lastPose)
-                    {
-                        poseKeptTime += gameTime.ElapsedGameTime.Milliseconds;
-                    }
-                    else if (poseKeptTime > 500)
-                    {
-                        creationRenderer.currentColor = RandomColor();
-                        poseKeptTime = 0;
-                    }
-                    else
-                    {
-                        poseKeptTime = 0;
-                    }
-                    creationRenderer.poseKeptTime = poseKeptTime;
-                    creationRenderer.currentPoseStatus = currentStatus;
-                    lastPose = currentStatus.closestPose;
-
-                    //If a pose has been kept for a certain amount of time 
-                    if (poseKeptTime >= 2000)
-                    {
-                        poseKeptTime = 0;
-                        blockLockedIn = true;
-                        blockCreator.RemoveShape(currentStatus.closestPose);
-                        gameField.LockShape(currentStatus.closestPose, creationRenderer.currentColor);
-                    }
-                }
-
-                if (placerPlayer != null)
-                {
-                    elapsedGameTime += gameTime.ElapsedGameTime.Milliseconds;
-                    gameField.gameSpeed = 1 + 0.1 * (int)(elapsedGameTime/60000);
-                    timeSinceLastTick += gameTime.ElapsedGameTime.Milliseconds;
-                    PlayerMove move = blockPlacer.PlaceBlock(placerPlayer);
-
-                    gameField.MakeMove(move);
-                    if (timeSinceLastTick >= tickTime / gameField.gameSpeed)
-                    {
-                        if (gameField.MoveTimeStep())
-                        {
-                            //When releasing a locked block, generate a new color.
-                            if (blockLockedIn)
-                                creationRenderer.currentColor = RandomColor();
-                            blockLockedIn = false;
-                        }
-                        timeSinceLastTick = 0;
-                    }
-                    placingRenderer.animationFactor = (double)timeSinceLastTick / (double)tickTime;
-                }
-
-                if (gameField.gameOver)
-                {
-                    //TODO: Fix game over logic AND test
-                    showSplashScreen = true;
-                    Components.Remove(placingRenderer);
-                    Components.Remove(creationRenderer);
-                }
-            }
-            //Update players chosen from gamemode
-            else
-            {
-                ChooseNbrOfPlayers();
+                case GameState.PLAYING_GAME:
+                    TetrisGameLoop(gameTime);
+                    break;
+                case GameState.SHOWING_SPLASH_SCREEN:
+                    ChooseNbrOfPlayers(gameTime);
+                    break;
+                case GameState.SHOWING_INSTRUCTIONS:
+                    Instructions();
+                    break;
             }
             base.Update(gameTime);
         }
 
-        private void ChooseNbrOfPlayers()
+        private void ChooseNbrOfPlayers(GameTime gameTime)
         {
             Skeleton creatorPlayer = skeletonManager.creatorPlayer;
             Skeleton placerPlayer = skeletonManager.placerPlayer;
@@ -211,23 +160,100 @@ namespace BlockGame
                 nbrPlayers++;
 
             if (nbrPlayers!=0 && this.nbrPlayers == nbrPlayers)
-                playerCheckInTime++;
+                playerCheckInTime += gameTime.ElapsedGameTime.Milliseconds;
             else
                 playerCheckInTime = 0;
 
             this.nbrPlayers = nbrPlayers;
             //Change to reasonable time
-            if (playerCheckInTime >= 10)
+            if (playerCheckInTime >= 5000)
             {
                 //Just for testing
-                if(nbrPlayers==4)
+                if(nbrPlayers==2)
                     NewGame(new BlockCreationHumanPlayer(), new BlockPlacerHumanPlayer());
                 else
-                    NewGame(new BlockCreationHumanPlayer(), new BlockPlacerHumanPlayer());
-                Components.Add(placingRenderer);
-                Components.Add(creationRenderer);
-                showSplashScreen = false;
+                    NewGame(new BlockCreationComputerPlayer(), new BlockPlacerHumanPlayer());
+                gameState = GameState.SHOWING_INSTRUCTIONS;
             }          
+        }
+
+        private void Instructions()
+        {
+            Components.Add(placingRenderer);
+            Components.Add(creationRenderer);
+            gameState = GameState.PLAYING_GAME;
+        }
+
+        private void TetrisGameLoop(GameTime gameTime)
+        {
+            Skeleton creatorPlayer = skeletonManager.creatorPlayer;
+            Skeleton placerPlayer = skeletonManager.placerPlayer;
+            if (!blockCreator.isHuman)
+                creatorPlayer = placerPlayer;
+
+            if (creatorPlayer != null && !blockLockedIn)
+            {
+                PoseStatus currentStatus = blockCreator.GetBlock(creatorPlayer);
+                if (lastPose != PoseType.NO_POSE && currentStatus.closestPose == lastPose)
+                {
+                    poseKeptTime += gameTime.ElapsedGameTime.Milliseconds;
+                }
+                else if (poseKeptTime > 500)
+                {
+                    creationRenderer.currentColor = RandomColor();
+                    poseKeptTime = 0;
+                }
+                else
+                {
+                    poseKeptTime = 0;
+                }
+                creationRenderer.poseKeptTime = poseKeptTime;
+                creationRenderer.currentPoseStatus = currentStatus;
+                lastPose = currentStatus.closestPose;
+
+                //If a pose has been kept for a certain amount of time 
+                if (poseKeptTime >= 2000)
+                {
+                    poseKeptTime = 0;
+                    blockLockedIn = true;
+                    blockCreator.RemoveShape(currentStatus.closestPose);
+                    gameField.LockShape(currentStatus.closestPose, creationRenderer.currentColor);
+                }
+            }
+
+            if (placerPlayer != null)
+            {
+                pauseTime = 0;
+                elapsedGameTime += gameTime.ElapsedGameTime.Milliseconds;
+                gameField.gameSpeed = 1 + 0.1 * (int)(elapsedGameTime / 60000);
+                timeSinceLastTick += gameTime.ElapsedGameTime.Milliseconds;
+                PlayerMove move = blockPlacer.PlaceBlock(placerPlayer);
+
+                gameField.MakeMove(move);
+                if (timeSinceLastTick >= tickTime / gameField.gameSpeed)
+                {
+                    if (gameField.MoveTimeStep())
+                    {
+                        //When releasing a locked block, generate a new color.
+                        if (blockLockedIn)
+                            creationRenderer.currentColor = RandomColor();
+                        blockLockedIn = false;
+                    }
+                    timeSinceLastTick = 0;
+                }
+                placingRenderer.animationFactor = (double)timeSinceLastTick / (double)tickTime;
+            }
+            else
+            {
+                pauseTime += gameTime.ElapsedGameTime.Milliseconds / 1000;
+            }
+
+            if (gameField.gameOver || pauseTime >= 60)
+            {
+                gameState = GameState.SHOWING_SPLASH_SCREEN;
+                Components.Remove(placingRenderer);
+                Components.Remove(creationRenderer);
+            }
         }
 
         //Color generation for blocks
@@ -247,13 +273,39 @@ namespace BlockGame
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            if (showSplashScreen &&chooser.Sensor !=null)
+            if (chooser.Sensor == null)
+                return;
+
+            GraphicsDevice.Clear(Color.White);
+            if (gameState==GameState.SHOWING_SPLASH_SCREEN)
             {
-                GraphicsDevice.Clear(Color.White);
                 spriteBatch.Begin();
                 spriteBatch.Draw(splashScreen,new Rectangle(0,0,GraphicsDevice.Viewport.Width,GraphicsDevice.Viewport.Height)
                     ,Color.White);
                 spriteBatch.End();
+
+                if (nbrPlayers == 2)
+                {
+                    Color fadeIn = Color.LightGreen;
+                    fadeIn.A = (byte)(playerCheckInTime * 255 / 5000);
+                    spriteBatch.Begin();
+                    spriteBatch.Draw(twoPlayers,new Rectangle(GraphicsDevice.Viewport.Width/2,GraphicsDevice.Viewport.Height/2,
+                        100,100),fadeIn);
+                    spriteBatch.End();
+                }
+                else if(nbrPlayers == 1)
+                {
+                    Color fadeIn = Color.MediumPurple;
+                    fadeIn.A = (byte)(playerCheckInTime * 255 / 5000);
+                    spriteBatch.Begin();
+                    spriteBatch.Draw(twoPlayers, new Rectangle(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2,
+                        100, 100), fadeIn);
+                    spriteBatch.End();
+                } 
+            }
+            else if (gameState == GameState.SHOWING_INSTRUCTIONS)
+            {
+
             }
             base.Draw(gameTime);
         }
