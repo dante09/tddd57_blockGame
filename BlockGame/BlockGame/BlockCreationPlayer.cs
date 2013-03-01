@@ -23,9 +23,8 @@ namespace BlockGame
             shapeSelectionList = new List<PoseType>();
             shapeGenerator = new Random();
             //Populate the shapeSelectionList
-            for (int i = 0; i < MAX_LIST_SIZE-1; i++)
+            for (int i = 0; i < MAX_LIST_SIZE; i++)
                 AddShape();
-            shapeSelectionList.Add(PoseType.O);
         }
 
         public abstract PoseStatus GetBlock(Skeleton skel);

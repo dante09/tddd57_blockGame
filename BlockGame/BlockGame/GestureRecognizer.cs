@@ -12,7 +12,7 @@ namespace BlockGame
         protected int maxErrors;
         protected int amountOfErrors;
         protected GetSkeleton getSkel;
-        protected int gestureKeptTime;
+        public int gestureKeptTime { get; protected set; }
 
         public int holdFor
         {
@@ -33,17 +33,9 @@ namespace BlockGame
             Reset();
         }
 
-        //For some reason this did not work as a ordinary getter for gesturekeptTime
-        public int GetGestureKeptTime()
-        {
-            if (gestureKeptTime - holdFor / 5 < 0)
-                return 0;
-            return gestureKeptTime;
-        }
-
         public bool GestureStarted()
         {
-            return gestureKeptTime >= holdFor/5;
+            return gestureKeptTime > 0;
         }
 
         public void Reset()

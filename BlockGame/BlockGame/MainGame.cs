@@ -38,6 +38,7 @@ namespace BlockGame
         private int timeSinceLastTick = 0;
         private int elapsedGameTime = 0;
         private double pauseTime = 0;
+        private double gameOverTime = 0;
         //Splash screen and icons
         private Texture2D splashScreen;
         private Texture2D texture;
@@ -45,9 +46,12 @@ namespace BlockGame
         private Texture2D instruction1B;
         private Texture2D instruction2A;
         private Texture2D instruction2B;
+        private Texture2D gameOver;
         //GestureRecognizers
         private GestureRecognizer creatorRecognizer;
         private GestureRecognizer placerRecognizer;
+        //Font
+        private SpriteFont font;
 
         //Width of screen
         private int width = 1000;
@@ -59,7 +63,8 @@ namespace BlockGame
         {
             SHOWING_SPLASH_SCREEN,
             PLAYING_GAME,
-            SHOWING_INSTRUCTIONS
+            SHOWING_INSTRUCTIONS,
+            GAME_OVER
         }
 
         public MainGame()
@@ -99,14 +104,17 @@ namespace BlockGame
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
             Services.AddService(typeof(SpriteBatch), spriteBatch);
-            splashScreen = Content.Load<Texture2D>("titleScreen");
-            texture = Content.Load<Texture2D>("Bone");
 
-            //For now we always loads all the images
+            font = Content.Load<SpriteFont>("Segoe16");
+
+            //For now we always load all the images and nevr unload them. Could be optimized
             instruction1A = Content.Load<Texture2D>("instructions1A");
             instruction1B = Content.Load<Texture2D>("instructions1B");
             instruction2A = Content.Load<Texture2D>("instructions2A");
             instruction2B = Content.Load<Texture2D>("instructions2B");
+            gameOver = Content.Load<Texture2D>("gameover");
+            splashScreen = Content.Load<Texture2D>("titleScreen");
+            texture = Content.Load<Texture2D>("Bone");
 
             base.LoadContent();
         }
@@ -153,6 +161,15 @@ namespace BlockGame
                 case GameState.SHOWING_INSTRUCTIONS:
                     Instructions(gameTime);
                     break;
+                case GameState.GAME_OVER:
+                    gameOverTime += (double)gameTime.ElapsedGameTime.Milliseconds / 1000;
+                    if (gameOverTime >= 10)
+                    {
+                        gameState = GameState.SHOWING_SPLASH_SCREEN;
+                        gameOverTime = 0;
+                        ChooseNbrOfPlayers(gameTime);
+                    }
+                    break;
             }
             base.Update(gameTime);
         }
@@ -161,8 +178,8 @@ namespace BlockGame
         {
             if (creatorRecognizer == null || placerRecognizer == null)
             {
-                creatorRecognizer = new LeftArmUp(this, GetCreator , 10, 2000);
-                placerRecognizer = new LeftArmUp(this, GetPlacer, 10, 2000);
+                creatorRecognizer = new LeftArmUp(this, GetCreator, 10, 5000);
+                placerRecognizer = new LeftArmUp(this, GetPlacer, 10, 5000);
                 Components.Add(creatorRecognizer);
                 Components.Add(placerRecognizer);
                 System.Diagnostics.Debug.WriteLine("Setting up recognizers");
@@ -187,6 +204,7 @@ namespace BlockGame
                 else
                     NewGame(new BlockCreationComputerPlayer(), new BlockPlacerHumanPlayer());
                 gameState = GameState.SHOWING_INSTRUCTIONS;
+                Instructions(gameTime);
             }
             else if (this.nbrPlayers != 0 && this.nbrPlayers != nbrPlayers)
             {
@@ -194,24 +212,21 @@ namespace BlockGame
                 creatorRecognizer.Reset();
                 placerRecognizer.Reset();
             }
-            else
-            {
-                this.nbrPlayers = nbrPlayers;
-            }
+            this.nbrPlayers = nbrPlayers;
         }
 
         private void Instructions(GameTime gameTime)
         {
             if (placerRecognizer == null && this.nbrPlayers == 2)
             {
-                creatorRecognizer = new LeftArmUp(this, GetCreator, 10, 2000);
-                placerRecognizer = new LeftArmUp(this, GetPlacer, 10, 2000);
+                creatorRecognizer = new RightArmUp(this, GetCreator, 10, 5000);
+                placerRecognizer = new RightArmUp(this, GetPlacer, 10, 5000);
                 Components.Add(creatorRecognizer);
                 Components.Add(placerRecognizer);
             }
             else if (placerRecognizer == null)
             {
-                placerRecognizer = new LeftArmUp(this, GetPlacer, 10, 2000);
+                placerRecognizer = new RightArmUp(this, GetPlacer, 10, 5000);
                 Components.Add(placerRecognizer);
             }
 
@@ -296,7 +311,7 @@ namespace BlockGame
             //If game is over, or noone has been playing for a while, quit
             if (gameField.gameOver || pauseTime >= 60)
             {
-                gameState = GameState.SHOWING_SPLASH_SCREEN;
+                gameState = GameState.GAME_OVER;
                 nbrPlayers = 0;
                 Components.Remove(placingRenderer);
                 Components.Remove(creationRenderer);
@@ -331,8 +346,8 @@ namespace BlockGame
                     ,Color.White);
                 spriteBatch.End();
 
-                Color fadeIn = Color.LightGreen;
-                fadeIn.A = (byte)(placerRecognizer.GetGestureKeptTime() * 255 / placerRecognizer.holdFor);
+                Color fadeIn = Color.Green;
+                fadeIn.A = (byte)(255 * ((double)placerRecognizer.gestureKeptTime / (double)placerRecognizer.holdFor));
                 if (nbrPlayers == 2)
                 {
                     spriteBatch.Begin();
@@ -352,21 +367,51 @@ namespace BlockGame
             {
                 if (nbrPlayers == 2)
                 {
-                    spriteBatch.Begin();
-                    spriteBatch.Draw((gameTime.TotalGameTime.Seconds % 2 > 0 ? instruction1A : instruction1B),
-                        new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height)
-                        , Color.White);
-                    spriteBatch.End();
-                }
-                else
-                {
+                    Color placerFadeIn = Color.Green;
+                    Color creatorFadeIn = Color.Green;
+                    placerFadeIn.A = (byte)(255 * ((double)placerRecognizer.gestureKeptTime / (double)placerRecognizer.holdFor));
+                    creatorFadeIn.A = (byte)(255 * ((double)creatorRecognizer.gestureKeptTime / (double)creatorRecognizer.holdFor));
                     spriteBatch.Begin();
                     spriteBatch.Draw((gameTime.TotalGameTime.Seconds % 2 > 0 ? instruction2A : instruction2B),
                         new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height)
                         , Color.White);
+                    if(creatorRecognizer.GestureStarted())
+                        spriteBatch.Draw(texture, new Rectangle((int)(GraphicsDevice.Viewport.Width * 0.4143), (int)(GraphicsDevice.Viewport.Height * 0.9623),
+                            (int)(GraphicsDevice.Viewport.Width * 0.13), 30), creatorFadeIn);
+                    if (placerRecognizer.GestureStarted())
+                        spriteBatch.Draw(texture, new Rectangle((int)(GraphicsDevice.Viewport.Width * 0.5443), (int)(GraphicsDevice.Viewport.Height * 0.9623),
+                            (int)(GraphicsDevice.Viewport.Width * 0.13), 30), placerFadeIn);
+                    spriteBatch.End();
+                }
+                else if(nbrPlayers == 1)
+                {
+                    Color fadeIn = Color.Green;
+                    fadeIn.A = (byte)(255 * ((double)placerRecognizer.gestureKeptTime / (double)placerRecognizer.holdFor));
+                    System.Diagnostics.Debug.WriteLine("fadeIn.A: " + fadeIn.A);
+                    spriteBatch.Begin();
+                    
+                    spriteBatch.Draw((gameTime.TotalGameTime.Seconds % 2 > 0 ? instruction1A : instruction1B),
+                        new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height)
+                        , Color.White);
+                    if (placerRecognizer.GestureStarted())
+                        spriteBatch.Draw(texture, new Rectangle((int)(GraphicsDevice.Viewport.Width * 0.4130), (int)(GraphicsDevice.Viewport.Height * 0.9623),
+                            (int)(GraphicsDevice.Viewport.Width * 0.1831), 30), fadeIn);
                     spriteBatch.End();
                 }
             }
+            else if (gameState == GameState.GAME_OVER)
+            {
+                spriteBatch.Begin();
+                spriteBatch.Draw(gameOver, new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height)
+                    , Color.White);
+                spriteBatch.End();
+
+                spriteBatch.Begin();
+                spriteBatch.DrawString(font, "Du fick "+gameField.score +" apelsiner! ",
+                    new Vector2(GraphicsDevice.Viewport.Width / 2 - 100, GraphicsDevice.Viewport.Height / 2), Color.White);
+                spriteBatch.End();
+            }
+
             base.Draw(gameTime);
         }
 

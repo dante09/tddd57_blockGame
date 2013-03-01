@@ -1,10 +1,11 @@
 Content\KinectDepthVisualizer.xnb
+Content\KinectColorVisualizer.xnb
 Content\Segoe16.xnb
 Content\Bone.xnb
 Content\Joint.xnb
-Content\KinectColorVisualizer.xnb
 Content\titleScreen.xnb
 Content\instructions1A.xnb
 Content\instructions1B.xnb
 Content\instructions2A.xnb
 Content\instructions2B.xnb
+Content\gameover.xnb

@@ -202,11 +202,12 @@ namespace BlockGame
         //Draws a block at the specified coordinates with the specified color.
         private void DrawBlock(SpriteBatch spriteBatch, double x, double y, Color color)
         {
-            Vector2 size = new Vector2(renderDimensions.X / GameField.width, renderDimensions.Y / (GameField.height - GameField.invisibleRows));
+            Vector2 size = new Vector2((float)Math.Round(renderDimensions.X / GameField.width, MidpointRounding.AwayFromZero),
+                   (float)Math.Round(renderDimensions.Y / (GameField.height - GameField.invisibleRows), MidpointRounding.AwayFromZero));
             Vector2 position = new Vector2((float)(x * size.X + renderDimensions.X), (float)((y - GameField.invisibleRows) * size.Y));
             spriteBatch.Draw(
                 texture,
-                new Rectangle((int)position.X, (int)position.Y, (int)size.X, (int)size.Y),
+                new Rectangle((int)Math.Round(position.X, MidpointRounding.AwayFromZero), (int)Math.Round(position.Y, MidpointRounding.AwayFromZero), (int)size.X, (int)size.Y),
                 null,
                 color,
                 0,
