@@ -9,13 +9,37 @@ namespace BlockGame
 {
     class LeftArmUp : GestureRecognizer
     {
-        public LeftArmUp(Game game, Skeleton skel, int errorCount, int holdFor)
+        public LeftArmUp(Game game, GetSkeleton skel, int errorCount, int holdFor)
             : base(game, skel,errorCount,holdFor)
         {
         }
 
         public override void Update(GameTime gameTime)
         {
+            Skeleton skel = getSkel();
+            if (!gestureComplete && skel!=null)
+            {           
+                if (skel.Joints[JointType.WristLeft].Position.Y
+                        > skel.Joints[JointType.ShoulderCenter].Position.Y)
+                {
+                    amountOfErrors = 0;
+                    gestureKeptTime += gameTime.ElapsedGameTime.Milliseconds;
+                }
+                else if (amountOfErrors >= maxErrors)
+                {
+                    gestureKeptTime = 0;
+                    amountOfErrors = 0;
+                }
+                else
+                {
+                    amountOfErrors++;
+                }
+                if (gestureKeptTime >= holdFor)
+                {
+                    gestureKeptTime = holdFor;
+                    gestureComplete = true;
+                }
+            }
             base.Update(gameTime);
         }
     }

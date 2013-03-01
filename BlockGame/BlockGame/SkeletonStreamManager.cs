@@ -81,14 +81,14 @@ namespace BlockGame
                     if (skel.Position.Z < candidateDist1 && skel.TrackingState == SkeletonTrackingState.Tracked)
                     {
                         candidateDist2 = candidateDist1;
-                        placerPlayer = creatorPlayer;
+                        creatorPlayer = placerPlayer;
                         candidateDist1 = skel.Position.Z;
-                        creatorPlayer = skel;
+                        placerPlayer = skel;
                     }
                     else if (skel.Position.Z < candidateDist2 && skel.TrackingState == SkeletonTrackingState.Tracked)
                     {
                         candidateDist2 = skel.Position.Z;
-                        placerPlayer = skel;
+                        creatorPlayer = skel;
                     }
                 }
                 if (creatorPlayer!=null && placerPlayer != null && creatorPlayer.Position.X > placerPlayer.Position.X)

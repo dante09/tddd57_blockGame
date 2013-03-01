@@ -10,24 +10,47 @@ namespace BlockGame
     abstract class GestureRecognizer : GameComponent
     {
         protected int maxErrors;
-        protected int amountOfErrors = 0;
-        protected Skeleton skel;
-        protected int poseKeptTime = 0;
-        protected int holdFor;
-        protected int timesPoseCompleted = 0;
+        protected int amountOfErrors;
+        protected GetSkeleton getSkel;
+        protected int gestureKeptTime;
 
-        public GestureRecognizer(Game game,Skeleton skel,int errorCount,int holdFor) : base(game)
+        public int holdFor
+        {
+            get;
+            protected set;
+        }
+        public bool gestureComplete
+        {
+            get;
+            protected set;
+        }
+
+        public GestureRecognizer(Game game,GetSkeleton skel,int errorCount,int holdFor) : base(game)
         {
             this.maxErrors = errorCount;
             this.holdFor = holdFor;
-            this.skel = skel;
+            getSkel = skel;
+            Reset();
         }
 
-        public void reset()
+        //For some reason this did not work as a ordinary getter for gesturekeptTime
+        public int GetGestureKeptTime()
+        {
+            if (gestureKeptTime - holdFor / 5 < 0)
+                return 0;
+            return gestureKeptTime;
+        }
+
+        public bool GestureStarted()
+        {
+            return gestureKeptTime >= holdFor/5;
+        }
+
+        public void Reset()
         {
             amountOfErrors = 0;
-            poseKeptTime = 0;
-            timesPoseCompleted = 0;
+            gestureKeptTime = 0;
+            gestureComplete = false;
         }
     }
 }

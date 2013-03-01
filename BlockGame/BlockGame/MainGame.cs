@@ -9,7 +9,7 @@ using System.ComponentModel;
 
 namespace BlockGame
 {
-
+    public delegate Skeleton GetSkeleton(); 
     /// <summary>
     /// This is the main type for your game
     /// </summary>
@@ -36,17 +36,24 @@ namespace BlockGame
         //Timers
         private const int tickTime = 1000;
         private int timeSinceLastTick = 0;
-        private int playerCheckInTime = 0;
         private int elapsedGameTime = 0;
         private double pauseTime = 0;
         //Splash screen and icons
         private Texture2D splashScreen;
         private Texture2D texture;
+        private Texture2D instruction1A;
+        private Texture2D instruction1B;
+        private Texture2D instruction2A;
+        private Texture2D instruction2B;
+        //GestureRecognizers
+        private GestureRecognizer creatorRecognizer;
+        private GestureRecognizer placerRecognizer;
 
+        //Width of screen
         private int width = 1000;
-
+        //Variable to randomize the colors of blocks
         private Random colorGenerator;
-
+        //State of what we are showing on the screen
         private GameState gameState;
         private enum GameState
         {
@@ -95,6 +102,12 @@ namespace BlockGame
             splashScreen = Content.Load<Texture2D>("titleScreen");
             texture = Content.Load<Texture2D>("Bone");
 
+            //For now we always loads all the images
+            instruction1A = Content.Load<Texture2D>("instructions1A");
+            instruction1B = Content.Load<Texture2D>("instructions1B");
+            instruction2A = Content.Load<Texture2D>("instructions2A");
+            instruction2B = Content.Load<Texture2D>("instructions2B");
+
             base.LoadContent();
         }
 
@@ -117,7 +130,6 @@ namespace BlockGame
             blockPlacer = blockPlacerPlayer;
             creationRenderer.currentColor = RandomColor();
             elapsedGameTime = 0;
-            gameState = GameState.PLAYING_GAME;
         }
 
         /// <summary>
@@ -147,64 +159,74 @@ namespace BlockGame
 
         private void ChooseNbrOfPlayers(GameTime gameTime)
         {
-            Skeleton creatorPlayer = skeletonManager.creatorPlayer;
-            Skeleton placerPlayer = skeletonManager.placerPlayer;
+            if (creatorRecognizer == null || placerRecognizer == null)
+            {
+                creatorRecognizer = new LeftArmUp(this, GetCreator , 10, 2000);
+                placerRecognizer = new LeftArmUp(this, GetPlacer, 10, 2000);
+                Components.Add(creatorRecognizer);
+                Components.Add(placerRecognizer);
+                System.Diagnostics.Debug.WriteLine("Setting up recognizers");
+            }
             int nbrPlayers = 0;
-
-            if (placerPlayer != null && placerPlayer.Joints[JointType.WristLeft].Position.Y
-                    > placerPlayer.Joints[JointType.ShoulderCenter].Position.Y)
-                    nbrPlayers++;
-            if (creatorPlayer != null && creatorPlayer.Joints[JointType.WristLeft].Position.Y
-                    > creatorPlayer.Joints[JointType.ShoulderCenter].Position.Y)
+            if (creatorRecognizer.GestureStarted())
+                nbrPlayers++;
+            if (placerRecognizer.GestureStarted())
                 nbrPlayers++;
 
-            if (nbrPlayers!=0 && this.nbrPlayers == nbrPlayers)
-                playerCheckInTime += gameTime.ElapsedGameTime.Milliseconds;
-            else
-                playerCheckInTime = 0;
-
-            this.nbrPlayers = nbrPlayers;
-            //Change to reasonable time
-            if (playerCheckInTime >= 2000)
+            if (creatorRecognizer.gestureComplete || placerRecognizer.gestureComplete)
             {
-                playerCheckInTime = 0;
-                if(nbrPlayers==2)
+                System.Diagnostics.Debug.WriteLine("Pose complete");
+                //Remove recongizers
+                Components.Remove(creatorRecognizer);
+                Components.Remove(placerRecognizer);
+                creatorRecognizer = null;
+                placerRecognizer = null;
+
+                if (nbrPlayers == 2)
                     NewGame(new BlockCreationHumanPlayer(), new BlockPlacerHumanPlayer());
                 else
                     NewGame(new BlockCreationComputerPlayer(), new BlockPlacerHumanPlayer());
                 gameState = GameState.SHOWING_INSTRUCTIONS;
-            }          
+            }
+            else if (this.nbrPlayers != 0 && this.nbrPlayers != nbrPlayers)
+            {
+                System.Diagnostics.Debug.WriteLine("Reset recognizers");
+                creatorRecognizer.Reset();
+                placerRecognizer.Reset();
+            }
+            else
+            {
+                this.nbrPlayers = nbrPlayers;
+            }
         }
 
         private void Instructions(GameTime gameTime)
         {
-            Skeleton creatorPlayer = skeletonManager.creatorPlayer;
-            Skeleton placerPlayer = skeletonManager.placerPlayer;
-            int nbrPlayers = 0;
-
-            Components.Add(placingRenderer);
-            Components.Add(creationRenderer);
-            gameState = GameState.PLAYING_GAME;
-            /*
-            if (placerPlayer != null && placerPlayer.Joints[JointType.WristRight].Position.Y
-                    > placerPlayer.Joints[JointType.ShoulderCenter].Position.Y)
-                nbrPlayers++;
-            if (creatorPlayer != null && creatorPlayer.Joints[JointType.WristRight].Position.Y
-                    > creatorPlayer.Joints[JointType.ShoulderCenter].Position.Y)
-                nbrPlayers++;
-
-            if (this.nbrPlayers == nbrPlayers)
-                playerCheckInTime += gameTime.ElapsedGameTime.Milliseconds;
-            else
-                playerCheckInTime = 0;
-
-            if (playerCheckInTime >= 2000)
+            if (placerRecognizer == null && this.nbrPlayers == 2)
             {
+                creatorRecognizer = new LeftArmUp(this, GetCreator, 10, 2000);
+                placerRecognizer = new LeftArmUp(this, GetPlacer, 10, 2000);
+                Components.Add(creatorRecognizer);
+                Components.Add(placerRecognizer);
+            }
+            else if (placerRecognizer == null)
+            {
+                placerRecognizer = new LeftArmUp(this, GetPlacer, 10, 2000);
+                Components.Add(placerRecognizer);
+            }
+
+            if ((creatorRecognizer==null || creatorRecognizer.gestureComplete) && placerRecognizer.gestureComplete)
+            {
+                //Remove recongizers
+                Components.Remove(creatorRecognizer);
+                Components.Remove(placerRecognizer);
+                creatorRecognizer = null;
+                placerRecognizer = null;
+
                 Components.Add(placingRenderer);
                 Components.Add(creationRenderer);
                 gameState = GameState.PLAYING_GAME;
-            } 
-             */
+            }
         }
 
         private void TetrisGameLoop(GameTime gameTime)
@@ -214,6 +236,7 @@ namespace BlockGame
             if (!blockCreator.isHuman)
                 creatorPlayer = placerPlayer;
 
+            //Create block
             if (creatorPlayer != null && !blockLockedIn)
             {
                 PoseStatus currentStatus = blockCreator.GetBlock(creatorPlayer);
@@ -243,7 +266,7 @@ namespace BlockGame
                     gameField.LockShape(currentStatus.closestPose, creationRenderer.currentColor);
                 }
             }
-
+            //Place block
             if (placerPlayer != null)
             {
                 pauseTime = 0;
@@ -268,9 +291,9 @@ namespace BlockGame
             }
             else
             {
-                pauseTime += gameTime.ElapsedGameTime.Milliseconds / 1000;
+                pauseTime += (double)gameTime.ElapsedGameTime.Milliseconds / 1000;
             }
-
+            //If game is over, or noone has been playing for a while, quit
             if (gameField.gameOver || pauseTime >= 60)
             {
                 gameState = GameState.SHOWING_SPLASH_SCREEN;
@@ -309,7 +332,7 @@ namespace BlockGame
                 spriteBatch.End();
 
                 Color fadeIn = Color.LightGreen;
-                fadeIn.A = (byte)(playerCheckInTime * 255 / 2000);
+                fadeIn.A = (byte)(placerRecognizer.GetGestureKeptTime() * 255 / placerRecognizer.holdFor);
                 if (nbrPlayers == 2)
                 {
                     spriteBatch.Begin();
@@ -327,7 +350,22 @@ namespace BlockGame
             }
             else if (gameState == GameState.SHOWING_INSTRUCTIONS)
             {
-                
+                if (nbrPlayers == 2)
+                {
+                    spriteBatch.Begin();
+                    spriteBatch.Draw((gameTime.TotalGameTime.Seconds % 2 > 0 ? instruction1A : instruction1B),
+                        new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height)
+                        , Color.White);
+                    spriteBatch.End();
+                }
+                else
+                {
+                    spriteBatch.Begin();
+                    spriteBatch.Draw((gameTime.TotalGameTime.Seconds % 2 > 0 ? instruction2A : instruction2B),
+                        new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height)
+                        , Color.White);
+                    spriteBatch.End();
+                }
             }
             base.Draw(gameTime);
         }
@@ -345,5 +383,14 @@ namespace BlockGame
             e.GraphicsDeviceInformation.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
         }
 
+        public Skeleton GetCreator()
+        {
+            return skeletonManager.creatorPlayer;
+        }
+
+        public Skeleton GetPlacer()
+        {
+            return skeletonManager.placerPlayer;
+        }
     }
 }
