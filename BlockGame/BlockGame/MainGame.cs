@@ -347,19 +347,20 @@ namespace BlockGame
                 spriteBatch.End();
 
                 Color fadeIn = Color.Green;
-                fadeIn.A = (byte)(255 * ((double)placerRecognizer.gestureKeptTime / (double)placerRecognizer.holdFor));
+                double fadeInFactor = (double)placerRecognizer.gestureKeptTime / (double)placerRecognizer.holdFor;
+                fadeIn.A = (byte)(255 * fadeInFactor);
                 if (nbrPlayers == 2)
                 {
                     spriteBatch.Begin();
                     spriteBatch.Draw(texture, new Rectangle((int)(GraphicsDevice.Viewport.Width * 0.6288), (int)(GraphicsDevice.Viewport.Height * 0.8905),
-                        (int)(GraphicsDevice.Viewport.Width * 0.1702), 30), fadeIn);
+                        (int)(GraphicsDevice.Viewport.Width * 0.1702 * fadeInFactor), 30), fadeIn);
                     spriteBatch.End();
                 }
                 else if(nbrPlayers == 1)
                 {
                     spriteBatch.Begin();
                     spriteBatch.Draw(texture, new Rectangle((int)(GraphicsDevice.Viewport.Width * 0.1702), (int)(GraphicsDevice.Viewport.Height * 0.8905),
-                        (int)(GraphicsDevice.Viewport.Width * 0.1702), 30), fadeIn);
+                        (int)(GraphicsDevice.Viewport.Width * 0.1702 * fadeInFactor), 30), fadeIn);
                     spriteBatch.End();
                 } 
             }
@@ -369,24 +370,27 @@ namespace BlockGame
                 {
                     Color placerFadeIn = Color.Green;
                     Color creatorFadeIn = Color.Green;
-                    placerFadeIn.A = (byte)(255 * ((double)placerRecognizer.gestureKeptTime / (double)placerRecognizer.holdFor));
-                    creatorFadeIn.A = (byte)(255 * ((double)creatorRecognizer.gestureKeptTime / (double)creatorRecognizer.holdFor));
+                    double placerFadeInFactor = (double)placerRecognizer.gestureKeptTime / (double)placerRecognizer.holdFor;
+                    double creatorFadeInFactor = (double)creatorRecognizer.gestureKeptTime / (double)creatorRecognizer.holdFor;
+                    placerFadeIn.A = (byte)(255 * placerFadeInFactor);
+                    creatorFadeIn.A = (byte)(255 * creatorFadeInFactor);
                     spriteBatch.Begin();
                     spriteBatch.Draw((gameTime.TotalGameTime.Seconds % 2 > 0 ? instruction2A : instruction2B),
                         new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height)
                         , Color.White);
                     if(creatorRecognizer.GestureStarted())
                         spriteBatch.Draw(texture, new Rectangle((int)(GraphicsDevice.Viewport.Width * 0.4143), (int)(GraphicsDevice.Viewport.Height * 0.9623),
-                            (int)(GraphicsDevice.Viewport.Width * 0.13), 30), creatorFadeIn);
+                            (int)(GraphicsDevice.Viewport.Width * 0.13 * creatorFadeInFactor), 30), creatorFadeIn);
                     if (placerRecognizer.GestureStarted())
-                        spriteBatch.Draw(texture, new Rectangle((int)(GraphicsDevice.Viewport.Width * 0.5443), (int)(GraphicsDevice.Viewport.Height * 0.9623),
-                            (int)(GraphicsDevice.Viewport.Width * 0.13), 30), placerFadeIn);
+                        spriteBatch.Draw(texture, new Rectangle((int)(GraphicsDevice.Viewport.Width * (0.4143 + 0.13 * creatorFadeInFactor)), (int)(GraphicsDevice.Viewport.Height * 0.9623),
+                            (int)(GraphicsDevice.Viewport.Width * 0.13 * placerFadeInFactor), 30), placerFadeIn);
                     spriteBatch.End();
                 }
                 else if(nbrPlayers == 1)
                 {
                     Color fadeIn = Color.Green;
-                    fadeIn.A = (byte)(255 * ((double)placerRecognizer.gestureKeptTime / (double)placerRecognizer.holdFor));
+                    double placerFadeInFactor = (double)placerRecognizer.gestureKeptTime / (double)placerRecognizer.holdFor;
+                    fadeIn.A = (byte)(255 * placerFadeInFactor);
                     System.Diagnostics.Debug.WriteLine("fadeIn.A: " + fadeIn.A);
                     spriteBatch.Begin();
                     
@@ -395,7 +399,7 @@ namespace BlockGame
                         , Color.White);
                     if (placerRecognizer.GestureStarted())
                         spriteBatch.Draw(texture, new Rectangle((int)(GraphicsDevice.Viewport.Width * 0.4130), (int)(GraphicsDevice.Viewport.Height * 0.9623),
-                            (int)(GraphicsDevice.Viewport.Width * 0.1831), 30), fadeIn);
+                            (int)(GraphicsDevice.Viewport.Width * 0.1831 * placerFadeInFactor), 30), fadeIn);
                     spriteBatch.End();
                 }
             }
