@@ -129,7 +129,7 @@ namespace BlockGame
 
             double[] rightArmValues = { values[1], values[3] };
             double[] expectedRightArmValues = { 3, 0.5 };
-            bool rightArmDown = Normalize(rightArmValues, expectedRightArmValues) > 0.75;
+            bool rightArmDown = Normalize(rightArmValues, expectedRightArmValues) > 0.70;
 
             double[] leftArmValues = { values[0], values[2] };
             double[] expectedLeftArmValues = { 3, 1.35 };
@@ -154,7 +154,7 @@ namespace BlockGame
 
             double[] leftArmValues = { values[0], values[2] };
             double[] expectedLeftArmValues = { 3, 0.5 };
-            bool leftArmDown = Normalize(leftArmValues, expectedLeftArmValues) > 0.75;
+            bool leftArmDown = Normalize(leftArmValues, expectedLeftArmValues) > 0.70;
 
             double[] rightArmValues = { values[1], values[3] };
             double[] expectedRightArmValues = { 3, 1.35 };

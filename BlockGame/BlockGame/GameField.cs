@@ -55,7 +55,7 @@ namespace BlockGame
                 for (int y = 0; y < height; y++)
                 {
                     field[x, y] = 0;
-                    fieldColor[x, y] = Color.Black;
+                    fieldColor[x, y] = Color.LightGray;
                 }
             }
             score = 0;
@@ -206,9 +206,21 @@ namespace BlockGame
                     return;
                 }
             }
-            
+
+            /*
+            for (int displacementY = 1; displacementY < 3; displacementY++)
+            {
+                blocked = false;
+                for (int i = 0; i < humanPosition.Length; i++)
+                    if (IsOccupied(testPoints[i]))
+                        blocked = true;
+                if (!blocked)
+            }
+             */
+
             //If no valid position was found, let the shape stay as a unit block.
             System.Diagnostics.Debug.WriteLine("Found no suitable position for block at " + humanPosition[0] + ".");
+            humanPosition = shape;
         }
 
         //Returns true if the point is occupied or outside of the game field.
@@ -364,19 +376,6 @@ namespace BlockGame
                 for (int i = 0; i < humanPosition.Length; i++)             
                     humanPosition[i].Y += 1;
             }
-
-            //ENDAST FÖR TEST
-            if (hasResetHumanPosition)
-            {
-                for (int i = 0; i < height; i++)
-                {
-                    for (int k = 0; k < width; k++)
-                    {
-                        System.Diagnostics.Debug.Write(field[k, i] + " ");
-                    }
-                    System.Diagnostics.Debug.WriteLine("");
-                }
-            }
             return hasResetHumanPosition;
         }
 
@@ -402,7 +401,7 @@ namespace BlockGame
             {
                 int x = random.Next(0, width);
                 field[x, height-1] = 1;
-                fieldColor[x, height - 1] = Color.Black;
+                fieldColor[x, height - 1] = Color.LightGray;
             }
         }
 

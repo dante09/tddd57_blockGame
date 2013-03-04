@@ -15,8 +15,8 @@ namespace BlockGame
     /// </summary>
     public class MainGame : Microsoft.Xna.Framework.Game
     {
-        GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
+        private GraphicsDeviceManager graphics;
+        private SpriteBatch spriteBatch;
         private KinectChooser chooser;
 
         //Renderers
@@ -28,6 +28,7 @@ namespace BlockGame
         private BlockPlacerPlayer blockPlacer;
         //Game field for tetris
         private GameField gameField;
+        private int highScore = 0;
         //Diffrent flags to keep record of the state we are in
         private PoseType lastPose = PoseType.NO_POSE;
         private int poseKeptTime = 0;
@@ -70,10 +71,12 @@ namespace BlockGame
         public MainGame()
         {
             graphics = new GraphicsDeviceManager(this);
-            this.graphics.PreferredBackBufferWidth = width;
-            this.graphics.PreferredBackBufferHeight = (int)((double)2/3*width);
-            this.graphics.PreparingDeviceSettings += this.GraphicsDevicePreparingDeviceSettings;
-            this.graphics.SynchronizeWithVerticalRetrace = true;
+            graphics.PreferredBackBufferWidth = width;
+            graphics.PreferredBackBufferHeight = (int)((double)3/4 * width);
+            graphics.PreparingDeviceSettings += this.GraphicsDevicePreparingDeviceSettings;
+            graphics.SynchronizeWithVerticalRetrace = true;
+            graphics.IsFullScreen = true;
+
             //this.viewPortRectangle = new Rectangle(10, 80, width - 20, ((width - 2) / 4) * 3);
             Content.RootDirectory = "Content";
 
@@ -163,6 +166,8 @@ namespace BlockGame
                     break;
                 case GameState.GAME_OVER:
                     gameOverTime += (double)gameTime.ElapsedGameTime.Milliseconds / 1000;
+                    if (gameField.score > highScore)
+                        highScore = gameField.score;
                     if (gameOverTime >= 10)
                     {
                         gameState = GameState.SHOWING_SPLASH_SCREEN;
@@ -286,7 +291,7 @@ namespace BlockGame
             {
                 pauseTime = 0;
                 elapsedGameTime += gameTime.ElapsedGameTime.Milliseconds;
-                gameField.gameSpeed = 1 + 0.1 * (int)(elapsedGameTime / 60000);
+                gameField.gameSpeed = 1 + 0.2 * (int)(elapsedGameTime / 60000);
                 timeSinceLastTick += gameTime.ElapsedGameTime.Milliseconds;
                 PlayerMove move = blockPlacer.PlaceBlock(placerPlayer);
 
@@ -302,7 +307,7 @@ namespace BlockGame
                     }
                     timeSinceLastTick = 0;
                 }
-                placingRenderer.animationFactor = (double)timeSinceLastTick / (double)tickTime;
+                placingRenderer.animationFactor = (double)timeSinceLastTick / (double)(tickTime / gameField.gameSpeed);
             }
             else
             {
@@ -349,6 +354,10 @@ namespace BlockGame
                 Color fadeIn = Color.Green;
                 double fadeInFactor = (double)placerRecognizer.gestureKeptTime / (double)placerRecognizer.holdFor;
                 fadeIn.A = (byte)(255 * fadeInFactor);
+                spriteBatch.Begin();
+                spriteBatch.DrawString(font, "Dagens rekord: " + gameField.score + " apelsiner",
+                    new Vector2(GraphicsDevice.Viewport.Width / 2 - 200, GraphicsDevice.Viewport.Height / 2 - 100), Color.Azure);
+                spriteBatch.End();
                 if (nbrPlayers == 2)
                 {
                     spriteBatch.Begin();
@@ -379,11 +388,11 @@ namespace BlockGame
                         new Rectangle(0, 0, GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height)
                         , Color.White);
                     if(creatorRecognizer.GestureStarted())
-                        spriteBatch.Draw(texture, new Rectangle((int)(GraphicsDevice.Viewport.Width * 0.4143), (int)(GraphicsDevice.Viewport.Height * 0.9623),
-                            (int)(GraphicsDevice.Viewport.Width * 0.13 * creatorFadeInFactor), 30), creatorFadeIn);
+                        spriteBatch.Draw(texture, new Rectangle((int)(GraphicsDevice.Viewport.Width * 0.4343), (int)(GraphicsDevice.Viewport.Height * 0.9623),
+                            (int)(GraphicsDevice.Viewport.Width * 0.11 * creatorFadeInFactor), 30), creatorFadeIn);
                     if (placerRecognizer.GestureStarted())
-                        spriteBatch.Draw(texture, new Rectangle((int)(GraphicsDevice.Viewport.Width * (0.4143 + 0.13 * creatorFadeInFactor)), (int)(GraphicsDevice.Viewport.Height * 0.9623),
-                            (int)(GraphicsDevice.Viewport.Width * 0.13 * placerFadeInFactor), 30), placerFadeIn);
+                        spriteBatch.Draw(texture, new Rectangle((int)(GraphicsDevice.Viewport.Width * 0.5743), (int)(GraphicsDevice.Viewport.Height * 0.9623),
+                            (int)(GraphicsDevice.Viewport.Width * 0.11 * placerFadeInFactor), 30), placerFadeIn);
                     spriteBatch.End();
                 }
                 else if(nbrPlayers == 1)
@@ -412,7 +421,10 @@ namespace BlockGame
 
                 spriteBatch.Begin();
                 spriteBatch.DrawString(font, "Du fick "+gameField.score +" apelsiner! ",
-                    new Vector2(GraphicsDevice.Viewport.Width / 2 - 100, GraphicsDevice.Viewport.Height / 2), Color.White);
+                    new Vector2(GraphicsDevice.Viewport.Width / 2 - 100, GraphicsDevice.Viewport.Height / 2), Color.Azure);
+                if (gameField.score == highScore)
+                    spriteBatch.DrawString(font, "Grattis! Du slog dagens rekord!",
+                        new Vector2(GraphicsDevice.Viewport.Width / 2 - 100, GraphicsDevice.Viewport.Height / 2 + 100), Color.Azure);
                 spriteBatch.End();
             }
 
